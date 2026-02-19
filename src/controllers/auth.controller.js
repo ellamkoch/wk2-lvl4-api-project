@@ -1,8 +1,43 @@
+/**
+ * Auth Controller
+ *
+ * Responsibilities:
+ * - Handle user registration and login
+ * - Validate required fields (email, password)
+ * - Hash passwords using bcrypt
+ * - Issue JWT tokens on successful authentication
+ * - Return standardized response envelopes
+ *
+ * This controller does NOT:
+ * - Persist to a database (Phase 1 uses in-memory storage)
+ * - Handle role-based access
+ * - Implement refresh tokens
+ *
+ * Phase: 1 (In-Memory)
+ */
+
+
 import { conflict, unauthorized } from '#utils/httpErrors';
 import { ensureFields } from '#utils/ensureFieldsGuard';
 import { hashPassword, verifyPassword } from '#utils/password';
 import { signToken } from '#utils/jwt';
 
+/**
+ * Register a new user.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ *
+ * Expected body:
+ * { email: string, password: string }
+ *
+ * Returns:
+ * 201 with JWT token if successful
+ *
+ * Throws:
+ * - VALIDATION_ERROR (400)
+ */
 
 export async function registerUser(req, res) {
     const { users } = res.locals.repos;
@@ -32,6 +67,23 @@ export async function registerUser(req, res) {
         user: { id: user.id, email: user.email },
     });
 }
+
+/**
+ * Authenticate an existing user.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {Promise<void>}
+ *
+ * Expected body:
+ * { email: string, password: string }
+ *
+ * Returns:
+ * 200 with JWT token if credentials are valid
+ *
+ * Throws:
+ * - UNAUTHORIZED (401) if invalid credentials
+ */
 
 export async function loginUser(req, res) {
     const { users } = res.locals.repos;

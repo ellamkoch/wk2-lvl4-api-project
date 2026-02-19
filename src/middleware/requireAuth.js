@@ -1,3 +1,23 @@
+/**
+ * requireAuth Middleware
+ *
+ * Responsibilities:
+ * - Require Authorization: Bearer <token>
+ * - Verify JWT signature
+ * - Attach authenticated user identity to req.user
+ * - Normalize invalid/missing token errors
+ *
+ * Phase: 1
+ */
+/**
+ * Protects routes by enforcing JWT authentication.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
+
+
 import { unauthorized } from '#utils/httpErrors';
 import { verifyToken } from '#utils/jwt';
 

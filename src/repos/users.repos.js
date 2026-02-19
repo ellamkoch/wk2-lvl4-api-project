@@ -1,3 +1,23 @@
+/**
+ * Users Repository (In-Memory)
+ *
+ * Stores user records for Phase 1.
+ *
+ * Data shape:
+ * { id, email, passwordHash }
+ *
+ * Data resets on server restart.
+ *
+ * Phase: 1
+ */
+/**
+ * Create a new user.
+ *
+ * @param {{ email: string, passwordHash: string }} input
+ * @returns {{ id: string, email: string, passwordHash: string }}
+ */
+
+
 export function createUsersRepo() {
 
     const users = [];

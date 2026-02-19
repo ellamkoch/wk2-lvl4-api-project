@@ -27,23 +27,24 @@ import morgan from 'morgan';
 
 import { respond } from '#middleware/responds';
 import { requestId } from '#middleware/requestId';
-// import { requireJson } from '#middleware/requireJson';//bring this back when you put in the routes/paths
+import { requireJson } from '#middleware/requireJson';//bring this back when you put in the routes/paths
 import { errorHandler } from '#middleware/errorHandler';
 import { notFoundHandler } from '#middleware/notFoundHandler';
 
-export function createApp({ config = {} }) {
+import { authRouter } from '#routes/auth.routes';
+
+export function createApp({ repos, config = {} }) {
     const app = express();
 
     app.locals.config = config;
 
     app.use(express.json());
 
-
     app.use(helmet());
 
     app.use(morgan('dev'));
 
-    // app.use((req, _res, next) => {//not needed perhaps? 
+    // app.use((req, _res, next) => {//not needed perhaps?
     //     next();
     // })
 
@@ -55,6 +56,14 @@ export function createApp({ config = {} }) {
         return res.ok({ status: 'ok' });
 
     });
+
+    app.use((_req, res, next) => {
+        res.locals.repos = repos;
+        next();
+    });
+
+    //routes
+    app.use('/auth', authRouter);
 
     app.use(notFoundHandler);
 

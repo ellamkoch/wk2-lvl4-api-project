@@ -31,7 +31,7 @@
     "#routes/*": "./src/routes/*.js",
     "#controllers/*": "./src/controllers/*.js",
     "#middleware/*": "./src/middleware/*.js",
-    "#repositories/*": "./src/repositories/*.js",
+    "#repos/*": "./src/repos/*.js",
     "#utils/*": "./src/utils/*.js"
   },
   "dependencies": {

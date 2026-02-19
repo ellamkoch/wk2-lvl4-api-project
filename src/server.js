@@ -18,14 +18,14 @@
 
 import { ensureEnv } from '#utils/env';
 import { createApp } from '#app';
-// import { createRepos } from '#repositories/index';
+import { createRepos } from '#repos/index';
 
 const env = ensureEnv(); //validates env variables at startup. fails fast if config is invalid.
 
-// const repos = await createRepos();
+const repos = await createRepos();
 
 const app = createApp({
-    // repos,
+    repos,
     config: { JWT_SECRET: env.JWT_SECRET },
 });
 

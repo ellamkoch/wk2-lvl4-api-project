@@ -67,11 +67,34 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 * [x] Logging middleware
 * [x] Global response helper
 * [x] Global error handler
-* [ ] JWT auth routes
+* [x] JWT auth routes
 * [ ] Primary resource (classes)
 * [ ] Related resource (entries)
 * [ ] Ownership enforcement
 * [ ] Tests (happy path + error path)
+
+### Authentication (Phase 1)
+
+Authentication is implemented using JSON Web Tokens (JWT).
+
+Passwords are hashed using bcrypt before being stored in memory.
+
+On successful registration or login, the API returns a signed JWT token.
+
+Protected routes must include:
+
+Authorization: Bearer <token>
+
+JWT payload includes:
+
+{
+"sub": "<userId>"
+}
+
+The `sub` claim is used to enforce ownership of resources at the application layer.
+
+Authentication errors return consistent 401 responses using the global error handler.
+
 
 ## Future Phase (Phase 2 Preview)
 
@@ -92,7 +115,7 @@ The API contract (routes + response format) will remain unchanged.
 * Helmet (security headers)
 * Morgan (request logging)
 * dotenv (environment variables)
-* jsonwebtoken (JWT auth)
+* jsonwebtoken (JWT authentication)
 * bcryptjs (password hashing)
 * Vitest
 * Supertest
@@ -181,7 +204,7 @@ This project uses a layered structure:
 * **createApp.js** → Express app factory
 * **middleware/** → reusable middleware
 * **controllers/** → request handling logic
-* **repos/** → in-memory data layer (Phase 1)
+* **repos/** → in-memory data layer (users + resource storage in Phase 1)
 * **routes/** → route definitions
 * **utils/** → shared helpers (env, jwt, etc.)
 * **tests/** → API tests
@@ -240,6 +263,31 @@ This confirms:
 * Middleware loaded
 * JSON parsing works
 * Security headers active
+
+### Authentication Endpoints
+
+#### POST `/auth/register`
+
+Request body:
+
+{
+"email": "user@example.com",
+"password": "securePassword"
+}
+
+Returns a signed JWT token on success.
+
+#### POST `/auth/login`
+
+Request body:
+
+{
+"email": "user@example.com",
+"password": "securePassword"
+}
+
+Returns a signed JWT token on success.
+
 
 ### Request Correlation
 

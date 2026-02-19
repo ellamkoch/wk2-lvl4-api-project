@@ -25,6 +25,12 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import { respond } from '#middleware/responds';
+import { requestId } from '#middleware/requestId';
+// import { requireJson } from '#middleware/requireJson';//bring this back when you put in the routes/paths
+import { errorHandler } from '#middleware/errorHandler';
+import { notFoundHandler } from '#middleware/notFoundHandler';
+
 export function createApp({ config = {} }) {
     const app = express();
 
@@ -32,14 +38,27 @@ export function createApp({ config = {} }) {
 
     app.use(express.json());
 
+
     app.use(helmet());
 
     app.use(morgan('dev'));
 
+    // app.use((req, _res, next) => {//not needed perhaps? 
+    //     next();
+    // })
+
+    app.use(requestId);
+
+    app.use(respond);
+
     app.get('/health', (req, res) => {
-        return res.json({ ok: true, data: { status: 'ok' }, meta: {} });
+        return res.ok({ status: 'ok' });
 
     });
+
+    app.use(notFoundHandler);
+
+    app.use(errorHandler);
 
     return app;
 }

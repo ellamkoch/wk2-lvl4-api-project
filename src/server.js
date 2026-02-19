@@ -31,6 +31,6 @@ const app = createApp({
 
 // Starts HTTP server and listen on configured port.
 app.listen(env.PORT, () => {
-    console.log(`App listening on http://localhost:${env.PORT}`);
+    console.log(`IT'S ALIVE!!! This App is listening on http://localhost:${env.PORT}`);
 });
 

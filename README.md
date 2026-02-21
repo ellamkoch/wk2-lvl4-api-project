@@ -68,10 +68,11 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 * [x] Global response helper
 * [x] Global error handler
 * [x] JWT auth routes
-* [ ] Primary resource (classes)
+* [x] Primary resource (classes)
 * [ ] Related resource (entries)
-* [ ] Ownership enforcement
-* [ ] Tests (happy path + error path)
+* [x] Ownership enforcement
+* [x] Tests (happy path + error path)
+
 
 ### Authentication (Phase 1)
 
@@ -95,6 +96,95 @@ The `sub` claim is used to enforce ownership of resources at the application lay
 
 Authentication errors return consistent 401 responses using the global error handler.
 
+#### Classes Resource (Phase 1)
+
+The `classes` resource represents globally visible competition classes.
+
+#### Public Endpoints
+
+##### GET `/classes`
+
+Returns a paginated list of all classes.
+
+Query parameters (optional):
+
+* `limit`
+* `page`
+
+Example response:
+
+```
+{
+  "ok": true,
+  "requestId": "uuid",
+  "data": [
+    { "id": 1, "className": "Hunter Under Saddle", "authorId": 1 }
+  ],
+  "meta": {
+    "pagination": {
+      "limit": 20,
+      "page": 1,
+      "total": 1
+    }
+  }
+}
+```
+
+##### GET `/classes/:id`
+
+Returns a single class by ID.
+
+Returns 404 if not found.
+
+#### Protected Endpoints (JWT Required)
+
+Authorization header required:
+`Authorization: Bearer <token>`
+
+##### POST `/classes`
+
+Creates a new class owned by the authenticated user.
+
+Request body:
+
+```
+{
+  "className": "Hunter Under Saddle"
+}
+```
+
+Returns 201 Created.
+
+##### PUT `/classes/:id`
+
+Updates a class if owned by the authenticated user.
+
+Returns:
+
+* 200 on success
+* 404 if not found
+* 403 if not owner
+
+##### DELETE `/classes/:id`
+
+Deletes a class if owned by the authenticated user.
+
+Returns:
+
+* 204 No Content
+* 404 if not found
+* 403 if not owner
+
+#### Ownership Model
+
+Classes are globally visible.
+
+Ownership is enforced only for:
+
+* Updates
+* Deletions
+
+Ownership is determined via the `sub` claim in the JWT payload (`req.user.id`).
 
 ## Future Phase (Phase 2 Preview)
 
@@ -204,7 +294,7 @@ This project uses a layered structure:
 * **createApp.js** → Express app factory
 * **middleware/** → reusable middleware
 * **controllers/** → request handling logic
-* **repos/** → in-memory data layer (users + resource storage in Phase 1)
+* **repos/** → in-memory data layer (users + classes in Phase 1)
 * **routes/** → route definitions
 * **utils/** → shared helpers (env, jwt, etc.)
 * **tests/** → API tests
@@ -287,7 +377,6 @@ Request body:
 }
 
 Returns a signed JWT token on success.
-
 
 ### Request Correlation
 

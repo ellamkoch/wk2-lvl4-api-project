@@ -5,20 +5,25 @@
  *
  * Responsibilities:
  * - Validate required environment configuration.
- * - Create the Express application instance.
+ * - Create repository instances.
+ * - Create the Express application via factory.
  * - Start the HTTP server.
  *
- * This file should contain startup logic only.
- * No route logic or middleware should be defined here.
+ * This file contains startup logic only.
+ * No route definitions or middleware configuration should exist here.
+ *
+ * Architecture:
+ * - Repositories are created once at startup.
+ * - They are injected into the app and attached to res.locals per request.
  */
-/**
- * @type {{ PORT: number, JWT_SECRET: string }}
- */
-
 
 import { ensureEnv } from '#utils/env';
 import { createApp } from '#app';
 import { createRepos } from '#repos/index';
+
+/**
+ * @type {{ PORT: number, JWT_SECRET: string }}
+ */
 
 const env = ensureEnv(); //validates env variables at startup. fails fast if config is invalid.
 

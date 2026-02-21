@@ -35,7 +35,6 @@ export function createUsersRepo() {
             return users.find((u) => u.email === email) ?? null;
         },
 
-
         findById(id) {
             return users.find((u) => u.id === id) ?? null;
         },

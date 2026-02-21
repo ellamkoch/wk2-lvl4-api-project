@@ -16,7 +16,8 @@
  * Creates and configures the Express application.
  *
  * @param {Object} options
- * @param {Object} options.config - Application configuration values.
+ * @param {Object} options.repos - Repository container injected per request via res.locals.repos
+ * @param {Object} [options.config] - Application configuration values (ex: JWT_SECRET)
  * @returns {import('express').Express}
  */
 
@@ -27,10 +28,10 @@ import morgan from 'morgan';
 
 import { respond } from '#middleware/responds';
 import { requestId } from '#middleware/requestId';
-import { requireJson } from '#middleware/requireJson';//bring this back when you put in the routes/paths
 import { errorHandler } from '#middleware/errorHandler';
 import { notFoundHandler } from '#middleware/notFoundHandler';
 
+import { classesRouter } from '#routes/classes.routes';
 import { authRouter } from '#routes/auth.routes';
 
 export function createApp({ repos, config = {} }) {
@@ -44,9 +45,9 @@ export function createApp({ repos, config = {} }) {
 
     app.use(morgan('dev'));
 
-    // app.use((req, _res, next) => {//not needed perhaps?
-    //     next();
-    // })
+    app.use((req, _res, next) => {//not needed perhaps?
+        next();
+    })
 
     app.use(requestId);
 
@@ -54,7 +55,6 @@ export function createApp({ repos, config = {} }) {
 
     app.get('/health', (req, res) => {
         return res.ok({ status: 'ok' });
-
     });
 
     app.use((_req, res, next) => {
@@ -63,6 +63,7 @@ export function createApp({ repos, config = {} }) {
     });
 
     //routes
+    app.use('/classes', classesRouter);
     app.use('/auth', authRouter);
 
     app.use(notFoundHandler);

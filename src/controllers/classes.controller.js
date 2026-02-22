@@ -22,7 +22,7 @@
  *  - We normalize via parsePagination to produce { limit, page, offset }.
  */
 import { notFound, forbidden, badRequest } from "#utils/httpErrors";
-
+import { ensure, ensureFields } from "#utils/ensureFieldsGuard";
 import { parsePagination } from '#utils/pagination';
 // import { parseCsvSet } from "#utils/queryParams"; //may need this later
 
@@ -37,7 +37,7 @@ import { parsePagination } from '#utils/pagination';
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-
+// Roadmap: support ?include=entries to attach entries per class.
 export function listAllClasses(req, res) {
     const { classes } = res.locals.repos;
     const { limit, page, offset } = parsePagination(req.query);
@@ -102,9 +102,7 @@ export function createClass(req, res) {
 
     const { className } = req.body ?? {};
 
-    if (!className) {
-    throw badRequest('Class Name is required');
-  }
+    ensure(className, notFound('Class Name is required'));
 
     const newClass = classes.create({ className, authorId: req.user.id });
 

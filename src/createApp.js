@@ -33,6 +33,7 @@ import { notFoundHandler } from '#middleware/notFoundHandler';
 
 import { classesRouter } from '#routes/classes.routes';
 import { authRouter } from '#routes/auth.routes';
+import { entriesRouter } from '#routes/entries.routes';
 
 export function createApp({ repos, config = {} }) {
     const app = express();
@@ -65,6 +66,7 @@ export function createApp({ repos, config = {} }) {
     //routes
     app.use('/classes', classesRouter);
     app.use('/auth', authRouter);
+    app.use('/entries', entriesRouter);
 
     app.use(notFoundHandler);
 

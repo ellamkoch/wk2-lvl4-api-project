@@ -69,10 +69,11 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 * [x] Global error handler
 * [x] JWT auth routes
 * [x] Primary resource (classes)
-* [ ] Related resource (entries)
+* [x] Related resource (entries)
+* [x] Nested routes (one-to-many)
+* [x] Cascade delete (class → entries)
 * [x] Ownership enforcement
-* [x] Tests (happy path + error path)
-
+* [ ] Tests (happy path + error path)
 
 ### Authentication (Phase 1)
 
@@ -175,7 +176,7 @@ Returns:
 * 404 if not found
 * 403 if not owner
 
-#### Ownership Model
+##### Ownership Model
 
 Classes are globally visible.
 
@@ -185,6 +186,113 @@ Ownership is enforced only for:
 * Deletions
 
 Ownership is determined via the `sub` claim in the JWT payload (`req.user.id`).
+
+#### Entries Resource (Phase 1)
+
+The `entries` resource represents a horse’s enrollment in a specific class.
+
+Each entry record contains:
+
+```
+{
+  id,
+  classId,
+  horseName,
+  authorId
+}
+```
+
+Entries form a **one-to-many relationship** :
+
+* One class → many entries
+* Each entry belongs to exactly one class
+
+##### Route Design
+
+Phase 1 uses a hybrid route structure:
+
+**Nested routes (collection operations):**
+
+* `GET /classes/:classId/entries`
+* `POST /classes/:classId/entries`
+
+**Flat routes (single resource operations):**
+
+* `PUT /entries/:entryId`
+* `DELETE /entries/:entryId`
+
+This design keeps:
+
+* Listing/creation logically grouped under the parent class
+* Update/delete operations simple and resource-oriented
+
+##### Public Endpoint
+
+###### GET `/classes/:classId/entries`
+
+Returns a paginated list of entries for a specific class.
+
+Query parameters (optional):
+
+* `limit`
+* `page`
+
+Returns:
+
+* 200 with paginated entries
+* 404 if class does not exist
+
+##### Protected Endpoints (JWT Required)
+
+Authorization header required: `Authorization: Bearer <token>`
+
+##### POST `/classes/:classId/entries`
+
+Creates a new entry under a specific class.
+
+Request body:
+
+```
+{
+  "horseName": "Rocket"
+}
+```
+
+Returns:
+
+* 201 Created
+* 404 if class does not exist
+
+##### PUT `/entries/:entryId`
+
+Updates an entry if owned by the authenticated user.
+
+Returns:
+
+* 200 on success
+* 404 if entry not found
+* 404 if parent class no longer exists
+* 403 if not owner
+
+##### DELETE `/entries/:entryId`
+
+Deletes an entry if owned by the authenticated user.
+
+Returns:
+
+* 204 No Content
+* 404 if entry not found
+* 404 if parent class no longer exists
+* 403 if not owner
+
+#### Cascade Behavior
+
+When a class is deleted:
+
+* All entries belonging to that class are removed.
+* This preserves in-memory integrity in Phase 1.
+
+Cascade is handled at the application layer and will later transition to database-level cascading in Phase 2.
 
 ## Future Phase (Phase 2 Preview)
 
@@ -230,6 +338,7 @@ tests/
 
 The project uses Node’s `"imports"` alias mapping to avoid long relative paths.
 
+
 ## How to Run/Install
 
 ### Environment Setup
@@ -268,17 +377,12 @@ You should see: `App listening on http://localhost:3005 `
 
 ## Scripts
 
-Development: `npm run dev`
-
-Lint: `npm run lint`
-
-Auto-fix lint issues: `npm run lint:fix`
-
-Check formatting: `npm run format:check`
-
-Write formatting: `npm run format:write`
-
-Run tests: `npm run test`
+* Development: `npm run dev`
+* Lint: `npm run lint`
+* Auto-fix lint issues: `npm run lint:fix
+* Check formatting: `npm run format:check`
+* Write formatting: `npm run format:write`
+* Run tests: `npm run test`
 
 ## Author Notes
 
@@ -298,6 +402,8 @@ This project uses a layered structure:
 * **routes/** → route definitions
 * **utils/** → shared helpers (env, jwt, etc.)
 * **tests/** → API tests
+
+Phase 1 includes a one-to-many relationship (classes → entries) implemented with nested routes and application-level cascade deletion.
 
 ### Response & Error Envelope
 

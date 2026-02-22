@@ -22,7 +22,7 @@
  *  - Calling repository methods
  *  - Returning HTTP responses
  */
-import { Router } from "express"
+import { Router } from "express";
 
 import {
     listAllClasses,
@@ -31,7 +31,7 @@ import {
     updateClass,
     deleteClass,
     } from '#controllers/classes.controller';
-    //import listentriesforclass and createentry for class and updateentry here later
+import  { listEntriesForClass, createEntry } from "#controllers/entries.controller";
     import { requireAuth } from "#middleware/requireAuth";
     import { requireJson } from "#middleware/requireJson";
 
@@ -44,8 +44,11 @@ export const classesRouter = Router();
 //public routes
 classesRouter.get('/', listAllClasses);
 classesRouter.get('/:id', getClassById);
-
 //Protected Routes that require Auth
 classesRouter.post('/', requireAuth, requireJson, createClass);
 classesRouter.put('/:id', requireAuth, requireJson, updateClass);
 classesRouter.delete('/:id', requireAuth, deleteClass);
+//Nests the entries inside the classes
+classesRouter.get('/:classId/entries', listEntriesForClass)
+classesRouter.post('/:classId/entries', requireAuth, requireJson, createEntry);
+// classesRouter.put('/:classId/entries/:entryId', requireAuth, requireJson, updateEntry);

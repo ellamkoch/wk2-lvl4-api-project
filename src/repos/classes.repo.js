@@ -22,7 +22,7 @@ import { applyWindow } from "#utils/applyWindow";
 
 export function createClassesRepo() {
 
-    const classes = []
+    const classes = [];
     let nextId = 1;
 
     return {

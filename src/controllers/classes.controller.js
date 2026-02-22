@@ -1,10 +1,11 @@
 /**
  * Classes Controller (Phase 1 - In-Memory)
  *
- * This file contains HTTP-focused handler functions for the /classes routes.
+ * HTTP handler functions for the /classes routes.
  *
  * Controllers:
  *  - Read input from the request (params, query, body)
+ *  - Use guards (ensure/ensureFields) to fail fast on invalid input
  *  - Call the repository to perform data operations
  *  - Send final HTTP responses (status + JSON) using res.ok/res.created/res.noContent
  *
@@ -15,12 +16,19 @@
  * Auth note:
  *  - Public routes: listAllClasses, getClassById
  *  - Protected routes: createClass, updateClass, deleteClass
- *  - requireAuth attaches the authenticated identity as req.user.id (from JWT sub)
+ *  - requireAuth parses the Bearer token, verifies JWT, and attaches req.user = { id }
+ *    (id comes from JWT `sub`)
+ *
+ * Validation / errors:
+ *  - ensure(value, error) throws when value is falsy (or fails a condition)
+ *  - Typical errors used here: badRequest (400), notFound (404), forbidden (403)
  *
  * Pagination note:
  *  - Query params arrive as strings.
- *  - We normalize via parsePagination to produce { limit, page, offset }.
+ *  - parsePagination normalizes and returns { limit, page, offset }.
+ *  - listAllClasses includes { pagination: { limit, page, total } } in the response metadata.
  */
+
 import { notFound, forbidden, badRequest } from "#utils/httpErrors";
 import { ensure, ensureFields } from "#utils/ensureFieldsGuard";
 import { parsePagination } from '#utils/pagination';
@@ -32,7 +40,12 @@ import { parsePagination } from '#utils/pagination';
  * Returns a paginated list of all classes.
  *
  * Query params (optional):
- *  - limit, page (handled by parsePagination)
+ *  - limit: number of items per page
+ *  - page: 1-based page number
+ *
+ * Response:
+ *  - 200 + list in data
+ *  - pagination metadata: { limit, page, total }
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -56,8 +69,11 @@ export function listAllClasses(req, res) {
  *
  * Returns a single class by id.
  *
+ * Errors:
+ *  - 404 if the class does not exist
+ *
  * Roadmap:
- *  - Support query param includes (ex: ?include=author,entries) once entries exist.
+ *  - Optional include flags (ex: ?include=entries,author) for expanded responses later.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -78,9 +94,7 @@ export function getClassById(req, res) {
     //     includeEntries,
     // });
 
-    if(!found) {
-        throw notFound('Class not found');
-    }
+    ensure(found, notFound('Class not found'));
 
     return res.ok(found);
 }
@@ -93,6 +107,9 @@ export function getClassById(req, res) {
  * Body:
  *  - className (required)
  *
+ * Errors:
+ *  - 400 if required fields are missing/invalid
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
@@ -102,7 +119,7 @@ export function createClass(req, res) {
 
     const { className } = req.body ?? {};
 
-    ensure(className, notFound('Class Name is required'));
+    ensure(className, badRequest('Class Name is required'));
 
     const newClass = classes.create({ className, authorId: req.user.id });
 
@@ -114,10 +131,18 @@ export function createClass(req, res) {
  *
  * Updates an existing class if owned by the authenticated user.
  *
+ * Body:
+ *  - className (optional; if omitted, request is rejected)
+ *
  * Repo returns:
  *  - updated object (success)
  *  - null (not found)
  *  - 'forbidden' (wrong owner)
+ *
+ * Errors:
+ *  - 400 if no updatable fields were provided
+ *  - 404 if class not found
+ *  - 403 if class exists but user is not the owner
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -132,14 +157,14 @@ export function updateClass(req, res) {
     //could put patch behavior here in the future to edit the field(s) that need updating, and return the rest as it was previously. Example below.
     if (req.body.className !== undefined) updates.className = req.body.className;
 
-    if (Object.keys(updates).length === 0) {
-        throw badRequest({ message: 'Please update the field' });
-    }
+    ensure(Object.keys(updates).length > 0,
+        badRequest('No updatable fields provided'));
     //don't need spread operator at this point, but could be needed for future versions
     const updatedClass = classes.update({ id, className: updates.className, authorId: req.user.id });
 
-    if (updatedClass === null) throw notFound('Class not found');
-    if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');
+     if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');
+    ensure(updatedClass, notFound('Class not found'));
+
     return res.ok(updatedClass);
 }
 
@@ -153,7 +178,12 @@ export function updateClass(req, res) {
  *  - null (not found)
  *  - 'forbidden' (wrong owner)
  *
- * Controller returns 204 No Content on success.
+ * Controller returns:
+ *  - 204 No Content on success
+ *
+ * Errors:
+ *  - 404 if class not found
+ *  - 403 if class exists but user is not the owner
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -165,9 +195,8 @@ export function deleteClass(req, res) {
 
     const result = classes.delete({ id, authorId: req.user.id });
 
-    if (result === null) throw notFound('Class not found');
-
     if (result === 'forbidden') throw forbidden('You cannot delete this class');
+    ensure(result, notFound('Class not found'));
 
     return res.noContent();
 }

@@ -126,11 +126,12 @@ export function updateEntry(req, res) {
 
     if (req.body?.horseName !== undefined) updates.horseName = req.body.horseName;
 
-    if (Object.keys(updates).length === 0) {
-        throw badRequest({ message: 'Please update the field' });
-    }
+    ensure(
+        Object.keys(updates).length > 0,
+    badRequest('No updatable fields provided'));
+
     const entry = entries.getById(id);
-    if (!entry) throw notFound('Entry not found');
+    ensure(entry, notFound('Entry not found'));
 
     ensure(classes.getById(entry.classId), notFound('Class not found'));
 

@@ -73,6 +73,7 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 * [x] Nested routes (one-to-many)
 * [x] Cascade delete (class → entries)
 * [x] Ownership enforcement
+* [x] Guard pattern consistency pass (ensure refactor)
 * [ ] Tests (happy path + error path)
 
 ### Authentication (Phase 1)
@@ -165,6 +166,7 @@ Returns:
 * 200 on success
 * 404 if not found
 * 403 if not owner
+* 400 if no updatable fields provided
 
 ##### DELETE `/classes/:id`
 
@@ -294,6 +296,17 @@ When a class is deleted:
 
 Cascade is handled at the application layer and will later transition to database-level cascading in Phase 2.
 
+#### Guard Pattern Consistency Pass (Pre-Testing Refactor)
+
+Before implementing tests, I performed a validation and guard consistency pass across the `classes` and `entries` controllers.
+
+#### What Was Updated
+
+* Standardized use of `ensure(condition, error)` for guard logic.
+* Replaced manual `if (...) throw` validation blocks with `ensure`.
+* Fixed an inverted guard condition in `updateClass`:
+  * Corrected to:`ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));`
+
 ## Future Phase (Phase 2 Preview)
 
 Phase 2 will:
@@ -305,6 +318,25 @@ Phase 2 will:
 * Add CI database integration
 
 The API contract (routes + response format) will remain unchanged.
+
+* Ensured all `badRequest()` calls pass a string message (not an object).
+* Verified consistent error mapping across resources:
+  * **400** → Invalid input
+  * **401** → Authentication failure (middleware)
+  * **403** → Ownership violation
+  * **404** → Resource not found
+
+### Why This Refactor Was Important
+
+Switching to guard helpers requires a mental shift:
+
+Instead of writing: `if (condition) throw error;`
+
+The controller now reads: `ensure(conditionIsTrue, error);`
+
+This enforces a consistent “fail-fast” validation pattern and reduces the risk of inverted logic.
+
+This refactor improved readability and prepared the codebase for structured test coverage.
 
 ### Tech Stack (Phase 1)
 
@@ -337,7 +369,6 @@ tests/
 ```
 
 The project uses Node’s `"imports"` alias mapping to avoid long relative paths.
-
 
 ## How to Run/Install
 

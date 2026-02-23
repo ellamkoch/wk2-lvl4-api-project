@@ -74,7 +74,7 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 * [x] Cascade delete (class → entries)
 * [x] Ownership enforcement
 * [x] Guard pattern consistency pass (ensure refactor)
-* [ ] Tests (happy path + error path)
+* [x] Tests (happy path + error path)
 
 ### Authentication (Phase 1)
 
@@ -307,6 +307,47 @@ Before implementing tests, I performed a validation and guard consistency pass a
 * Fixed an inverted guard condition in `updateClass`:
   * Corrected to:`ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));`
 
+## Test Coverage (Phase 1)
+
+Phase 1 includes integration-level API tests using **Vitest** and **Supertest** .
+
+Tests cover:
+
+### Authentication
+
+* Register user (201)
+* Login user (200)
+* JWT token returned on success
+
+### Classes Resource
+
+* 401 when creating without auth
+* 201 create class
+* 200 list classes with pagination meta
+* 403 wrong owner cannot update
+* 204 owner can delete
+* 404 delete not found
+* 400 update with empty body
+
+### Entries Resource
+
+Nested routes:
+
+* 201 create entry under class
+* 200 list entries for class
+
+Flat routes:
+
+* 200 update entry
+* 204 delete entry
+* 400 update with empty body
+* 404 entry not found
+* 403 wrong owner cannot update
+
+All tests run against a fresh in-memory repository instance per test to ensure isolation.
+
+Run tests with: `npm run test`
+
 ## Future Phase (Phase 2 Preview)
 
 Phase 2 will:
@@ -351,6 +392,7 @@ This refactor improved readability and prepared the codebase for structured test
 * Supertest
 * ESLint
 * Prettier
+  Vitest + Supertest (integration-level API testing)
 
 ### Project Structure
 
@@ -366,6 +408,7 @@ src/
   utils/
 tests/
 .github/workflows/
+tests/ → Integration tests (auth, classes, entries)
 ```
 
 The project uses Node’s `"imports"` alias mapping to avoid long relative paths.

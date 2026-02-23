@@ -21,10 +21,10 @@
  */
 
 import { applyWindow } from "#utils/applyWindow";
+import crypto from 'crypto';
 
 export function createEntriesRepo() {
     const entries = [];
-    let nextId = 1;
 
     return {
  /**
@@ -60,7 +60,7 @@ export function createEntriesRepo() {
      */
 
         create({ classId, horseName, authorId }) {
-            const newEntry = { id: nextId++, classId, horseName, authorId};
+            const newEntry = { id: crypto.randomUUID(), classId, horseName, authorId};
             entries.push(newEntry);
             return newEntry;
         },

@@ -19,11 +19,11 @@
  *  - wrong owner → 'forbidden'
  */
 import { applyWindow } from "#utils/applyWindow";
+import crypto from 'crypto';
 
 export function createClassesRepo() {
 
     const classes = [];
-    let nextId = 1;
 
     return {
 
@@ -61,7 +61,7 @@ export function createClassesRepo() {
              * @returns {{ id: number, className: string, authorId: any }}
              */
         create({ className, authorId }) {
-            const newClass = { id: nextId++, className, authorId };
+            const newClass = { id: crypto.randomUUID(), className, authorId };
             classes.push(newClass);
             return newClass;
         },

@@ -16,17 +16,16 @@
  * @param {{ email: string, passwordHash: string }} input
  * @returns {{ id: string, email: string, passwordHash: string }}
  */
-
+import crypto from 'crypto';
 
 export function createUsersRepo() {
 
     const users = [];
-    let nextId = 1;
 
     return {
 
         create(data) {
-            const user = { id: nextId++, ...data };
+            const user = { id: crypto.randomUUID(), ...data };
             users.push(user);
             return user;
         },

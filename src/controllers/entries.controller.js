@@ -58,7 +58,8 @@ import { parsePagination } from "#utils/pagination";
 
 export function listEntriesForClass(req, res) {
     const { classes, entries } = res.locals.repos;
-    const classId = Number(req.params.classId);
+
+    const classId = req.params.classId;
 
     ensure(classes.getById(classId), notFound('Class not found'));
 
@@ -88,7 +89,7 @@ export function listEntriesForClass(req, res) {
 export function createEntry(req, res) {
 
     const { classes, entries } = res.locals.repos;
-    const classId = Number(req.params.classId);
+    const classId = req.params.classId;
 
     ensure(classes.getById(classId), notFound('Class not found'));
     ensureFields(req.body, ['horseName']);
@@ -121,7 +122,7 @@ export function createEntry(req, res) {
  */
 export function updateEntry(req, res) {
     const { entries, classes } = res.locals.repos;
-    const id = Number(req.params.entryId);
+    const id = req.params.entryId;
     const updates = {};
 
     if (req.body?.horseName !== undefined) updates.horseName = req.body.horseName;
@@ -163,7 +164,7 @@ export function updateEntry(req, res) {
  */
 export function deleteEntry(req, res) {
     const { entries, classes } = res.locals.repos;
-    const id = Number(req.params.entryId);
+    const id = req.params.entryId;
 
     const entry = entries.getById(id);
     if (!entry) throw notFound('Entry not found');

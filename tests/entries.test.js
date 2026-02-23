@@ -34,15 +34,18 @@ describe('entries (nested)', () => {
 
         const classId = classRes.body.data.id;
 
-        await request(app)
+        const createEntry = await request(app)
         .post(`/classes/${classId}/entries`)
         .set('Authorization', `Bearer ${token}`)
         .send({ horseName: 'Cash' })
         .expect(201);
 
+        expect(createEntry.body.data.classId).toBe(classId);
+
         const list = await request(app)
         .get(`/classes/${classId}/entries`)
         .expect(200);
+
         expect(list.body.data).toHaveLength(1);
     });
     it('update an entry with auth, return 200', async() => {

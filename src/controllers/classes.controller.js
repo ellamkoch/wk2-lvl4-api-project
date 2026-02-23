@@ -82,7 +82,7 @@ export function listAllClasses(req, res) {
 export function getClassById(req, res) {
     const { classes } = res.locals.repos;
 
-    const id = Number(req.params.id);
+    const id = req.params.id;
 
     const found = classes.getById(id);
 // Roadmap: include=author,entries later
@@ -150,7 +150,7 @@ export function createClass(req, res) {
 export function updateClass(req, res) {
     const { classes } = res.locals.repos;
 
-    const id = Number(req.params.id);
+    const id = req.params.id;
 
     const updates = {};
 
@@ -191,7 +191,7 @@ export function updateClass(req, res) {
 export function deleteClass(req, res) {
     const { classes } = res.locals.repos;
 
-    const id = Number(req.params.id);
+    const id = req.params.id;
 
     const result = classes.delete({ id, authorId: req.user.id });
 

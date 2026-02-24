@@ -20,14 +20,14 @@
  *  - wrong owner → 'forbidden'
  */
 
-import { applyWindow } from "#utils/applyWindow";
+import { applyWindow } from '#utils/applyWindow';
 import crypto from 'crypto';
 
 export function createEntriesRepo() {
-    const entries = [];
+  const entries = [];
 
-    return {
- /**
+  return {
+    /**
      * Public: list all entries for a specific class.
      *
      * @param {number|string} classId
@@ -37,19 +37,19 @@ export function createEntriesRepo() {
      * @returns {{ entriesList: any[], total: number }}
      */
 
-        listByClassId(classId, { limit, offset } = {}) {
-            const all = entries.filter((e) => e.classId === classId);
-            const total = all.length;
+    listByClassId(classId, { limit, offset } = {}) {
+      const all = entries.filter((e) => e.classId === classId);
+      const total = all.length;
 
-            const entriesList = applyWindow(all, { limit, offset });
+      const entriesList = applyWindow(all, { limit, offset });
 
-            return { entriesList, total };
-        },
+      return { entriesList, total };
+    },
 
-        getById(id) {
-  return entries.find((e) => e.id === id) ?? null;
-},
-       /**
+    getById(id) {
+      return entries.find((e) => e.id === id) ?? null;
+    },
+    /**
      * Create a new entry under a class.
      *
      * @param {Object} params
@@ -59,12 +59,11 @@ export function createEntriesRepo() {
      * @returns {{ id: number, classId: any, horseName: string, authorId: any }}
      */
 
-        create({ classId, horseName, authorId }) {
-            const newEntry = { id: crypto.randomUUID(), classId, horseName, authorId};
-            entries.push(newEntry);
-            return newEntry;
-        },
-
+    create({ classId, horseName, authorId }) {
+      const newEntry = { id: crypto.randomUUID(), classId, horseName, authorId };
+      entries.push(newEntry);
+      return newEntry;
+    },
 
     /**
      * Update an entry if owned by the given author.
@@ -75,16 +74,16 @@ export function createEntriesRepo() {
      * @param {number|string} params.authorId
      * @returns {Object | null | 'forbidden'}
      */
-        update({ id, horseName, authorId }) {
-            const updatedEntry = entries.find((e) => e.id === id) ?? null;
-            if (!updatedEntry) return null;
-            if (updatedEntry.authorId !== authorId) return 'forbidden';
+    update({ id, horseName, authorId }) {
+      const updatedEntry = entries.find((e) => e.id === id) ?? null;
+      if (!updatedEntry) return null;
+      if (updatedEntry.authorId !== authorId) return 'forbidden';
 
-            updatedEntry.horseName = horseName;
-            return updatedEntry;
-        },
+      updatedEntry.horseName = horseName;
+      return updatedEntry;
+    },
 
-        /**
+    /**
      * Delete an entry if owned by the given author.
      *
      * @param {Object} params
@@ -93,25 +92,25 @@ export function createEntriesRepo() {
      * @returns {true | null | 'forbidden'}
      */
 
-        // Roadmap (Phase 2+):
-// Consider soft-delete via status field (e.g., status: 'active' | 'scratched')
-// to support billing scenarios where scratched entries are still billable.
-        delete({ id, authorId }) {
-            const idx = entries.findIndex((e) => e.id === id);
-            if (idx === -1) return null;
+    // Roadmap (Phase 2+):
+    // Consider soft-delete via status field (e.g., status: 'active' | 'scratched')
+    // to support billing scenarios where scratched entries are still billable.
+    delete({ id, authorId }) {
+      const idx = entries.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
 
-            if (entries[idx].authorId !== authorId) return 'forbidden';
+      if (entries[idx].authorId !== authorId) return 'forbidden';
 
-            entries.splice(idx, 1);
-            return true;
-        },
+      entries.splice(idx, 1);
+      return true;
+    },
 
-        // listByAuthorId( authorId, options = {} ){
-        //     const classEntries = entries.filter((e) => e.authorId === authorId);
-        //     return applyWindow(classEntries, options);
-        // },
+    // listByAuthorId( authorId, options = {} ){
+    //     const classEntries = entries.filter((e) => e.authorId === authorId);
+    //     return applyWindow(classEntries, options);
+    // },
 
-          /**
+    /**
      * Find an entry by id and verify ownership.
      *
      * @param {Object} params
@@ -120,16 +119,16 @@ export function createEntriesRepo() {
      * @returns {Object | null | 'forbidden'}
      */
 
-          // Roadmap:
-// If using nested routes for update/delete,
-// consider verifying entry.classId matches route param.
-        findByIdForAuthor({ id, authorId }) {
-            const found = entries.find((e) => e.id === id);
+    // Roadmap:
+    // If using nested routes for update/delete,
+    // consider verifying entry.classId matches route param.
+    findByIdForAuthor({ id, authorId }) {
+      const found = entries.find((e) => e.id === id);
 
-            if (!found) return null;
-            if (found.authorId !== authorId) return 'forbidden';
+      if (!found) return null;
+      if (found.authorId !== authorId) return 'forbidden';
 
-            return found;
-        },
-    }
+      return found;
+    },
+  };
 }

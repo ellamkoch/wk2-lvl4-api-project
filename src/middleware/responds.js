@@ -32,14 +32,14 @@
  * @param {import("express").NextFunction} next - Express next middleware function
  */
 
-
 export function respond(req, res, next) {
+  res.ok = (data, meta) =>
+    res.status(200).json({ ok: true, requestId: req.requestId, data, ...(meta ? { meta } : {}) });
 
-    res.ok = (data, meta) => res.status(200).json({ ok: true, requestId: req.requestId, data, ... meta ? { meta } : {} });
+  res.created = (data, meta) =>
+    res.status(201).json({ ok: true, requestId: req.requestId, data, ...(meta ? { meta } : {}) });
 
-    res.created = (data, meta) => res.status(201).json({ ok: true, requestId: req.requestId, data, ... meta ? { meta }: {} });
+  res.noContent = () => res.status(204).send();
 
-    res.noContent = () => res.status(204).send();
-
-    next();
+  next();
 }

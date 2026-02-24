@@ -18,31 +18,29 @@
  * @returns {void}
  */
 
-
-import { HttpError } from "#utils/httpErrors";
+import { HttpError } from '#utils/httpErrors';
 
 export function errorHandler(err, req, res, _next) {
-    console.error(err);
+  console.error(err);
 
-    if (err instanceof HttpError) {
-        return res.status(err.status).json({
-            ok: false,
-            requestId: req.requestId,
-            error: {
-                message: err.message,
-                code: err.code,
-                ...(err.details !== undefined ? { details: err.details } : {}),
-            },
-        });
-    }
-
-    return res.status(500).json({
-        ok: false,
-        requestId: req.requestId,
-        error: {
-            message: 'Internal Server Error',
-            code: 'internal_error',
-        },
+  if (err instanceof HttpError) {
+    return res.status(err.status).json({
+      ok: false,
+      requestId: req.requestId,
+      error: {
+        message: err.message,
+        code: err.code,
+        ...(err.details !== undefined ? { details: err.details } : {}),
+      },
     });
-}
+  }
 
+  return res.status(500).json({
+    ok: false,
+    requestId: req.requestId,
+    error: {
+      message: 'Internal Server Error',
+      code: 'internal_error',
+    },
+  });
+}

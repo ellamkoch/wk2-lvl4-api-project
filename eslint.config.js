@@ -1,37 +1,27 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 
-export default [
-  // Base JS recommendations
-  js.configs.recommended,
-
-   {
-    ignores: ['generated/**'],
-  },
-
-  // Project JS rules
+export default defineConfig([
   {
     files: ['**/*.js'],
+    extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: {
-        ...globals.node,
-      },
+      globals: globals.node,
     },
     rules: {
-      // Keep backend logging allowed for now
-      'no-console': 'off',
-
-      // Keep unused args allowed if prefixed with _
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-
-      // Useful correctness rule for students
-      eqeqeq: ['error', 'always'],
+      semi: ['error', 'always'],
+      'no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
-
-  // Disable ESLint rules that conflict with Prettier formatting
   prettier,
-];
+]);

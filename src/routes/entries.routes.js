@@ -44,13 +44,10 @@
  * The entry record already stores classId, so nested validation
  * is not required for Phase 1 rubric compliance.
  */
-import { Router } from "express";
-import {
-    updateEntry,
-    deleteEntry
- } from "#controllers/entries.controller";
-import { requireAuth } from "#middleware/requireAuth";
-import { requireJson } from "#middleware/requireJson";
+import { Router } from 'express';
+import { updateEntry, deleteEntry } from '#controllers/entries.controller';
+import { requireAuth } from '#middleware/requireAuth';
+import { requireJson } from '#middleware/requireJson';
 
 export const entriesRouter = Router();
 
@@ -59,5 +56,3 @@ export const entriesRouter = Router();
 //Roadmap - update could be a patch later when there are more fields. PUT is fine for now.
 entriesRouter.put('/:entryId', requireAuth, requireJson, updateEntry);
 entriesRouter.delete('/:entryId', requireAuth, deleteEntry);
-
-

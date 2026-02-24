@@ -17,25 +17,24 @@
  * @param {import('express').NextFunction} next
  */
 
-
 import { unauthorized } from '#utils/httpErrors';
 import { verifyToken } from '#utils/jwt';
 
 export function requireAuth(req, _res, next) {
-    const header = req.headers.authorization ?? '';
-    const [scheme, token] = header.split(' ');
+  const header = req.headers.authorization ?? '';
+  const [scheme, token] = header.split(' ');
 
-    if (scheme !== 'Bearer' || !token) {
-        return next(unauthorized('Missing Bearer token'));
-    }
+  if (scheme !== 'Bearer' || !token) {
+    return next(unauthorized('Missing Bearer token'));
+  }
 
-    try {
-        const secret = req.app.locals.config.JWT_SECRET;
-        const payload = verifyToken({ token, secret });
+  try {
+    const secret = req.app.locals.config.JWT_SECRET;
+    const payload = verifyToken({ token, secret });
 
-        req.user = { id: payload.sub };
-        return next();
-    } catch {
-        return next(unauthorized('Invalid token'));
-    }
+    req.user = { id: payload.sub };
+    return next();
+  } catch {
+    return next(unauthorized('Invalid token'));
+  }
 }

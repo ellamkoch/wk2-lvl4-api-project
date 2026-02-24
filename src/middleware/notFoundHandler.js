@@ -11,7 +11,6 @@
  * @returns {void}
  */
 
-
 import { notFound } from '#utils/httpErrors';
 
 /**

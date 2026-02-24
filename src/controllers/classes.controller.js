@@ -29,8 +29,8 @@
  *  - listAllClasses includes { pagination: { limit, page, total } } in the response metadata.
  */
 
-import { notFound, forbidden, badRequest } from "#utils/httpErrors";
-import { ensure, ensureFields } from "#utils/ensureFieldsGuard";
+import { notFound, forbidden, badRequest } from '#utils/httpErrors';
+import { ensure } from '#utils/ensureFieldsGuard';
 import { parsePagination } from '#utils/pagination';
 // import { parseCsvSet } from "#utils/queryParams"; //may need this later
 
@@ -52,16 +52,16 @@ import { parsePagination } from '#utils/pagination';
  */
 // Roadmap: support ?include=entries to attach entries per class.
 export function listAllClasses(req, res) {
-    const { classes } = res.locals.repos;
-    const { limit, page, offset } = parsePagination(req.query);
+  const { classes } = res.locals.repos;
+  const { limit, page, offset } = parsePagination(req.query);
 
-    const result = classes.listAll({
-        limit,
-        offset,
-    });
-    return res.ok(result.classList, {
-        pagination: { limit, page, total: result.total },
-    });
+  const result = classes.listAll({
+    limit,
+    offset,
+  });
+  return res.ok(result.classList, {
+    pagination: { limit, page, total: result.total },
+  });
 }
 
 /**
@@ -80,23 +80,23 @@ export function listAllClasses(req, res) {
  */
 
 export function getClassById(req, res) {
-    const { classes } = res.locals.repos;
+  const { classes } = res.locals.repos;
 
-    const id = req.params.id;
+  const id = req.params.id;
 
-    const found = classes.getById(id);
-// Roadmap: include=author,entries later
-    // const includeAuthor = include.has('author');
-    // const includeEntries = include.has('entries');
+  const found = classes.getById(id);
+  // Roadmap: include=author,entries later
+  // const includeAuthor = include.has('author');
+  // const includeEntries = include.has('entries');
 
-    // const classFound = classes.getByWithIncludes(id, {
-    //     includeAuthor,
-    //     includeEntries,
-    // });
+  // const classFound = classes.getByWithIncludes(id, {
+  //     includeAuthor,
+  //     includeEntries,
+  // });
 
-    ensure(found, notFound('Class not found'));
+  ensure(found, notFound('Class not found'));
 
-    return res.ok(found);
+  return res.ok(found);
 }
 
 /**
@@ -115,15 +115,15 @@ export function getClassById(req, res) {
  */
 
 export function createClass(req, res) {
-    const { classes } = res.locals.repos;
+  const { classes } = res.locals.repos;
 
-    const { className } = req.body ?? {};
+  const { className } = req.body ?? {};
 
-    ensure(className, badRequest('Class Name is required'));
+  ensure(className, badRequest('Class Name is required'));
 
-    const newClass = classes.create({ className, authorId: req.user.id });
+  const newClass = classes.create({ className, authorId: req.user.id });
 
-    return res.created(newClass);
+  return res.created(newClass);
 }
 
 /**
@@ -148,24 +148,23 @@ export function createClass(req, res) {
  * @param {import('express').Response} res
  */
 export function updateClass(req, res) {
-    const { classes } = res.locals.repos;
+  const { classes } = res.locals.repos;
 
-    const id = req.params.id;
+  const id = req.params.id;
 
-    const updates = {};
+  const updates = {};
 
-    //could put patch behavior here in the future to edit the field(s) that need updating, and return the rest as it was previously. Example below.
-    if (req.body.className !== undefined) updates.className = req.body.className;
+  //could put patch behavior here in the future to edit the field(s) that need updating, and return the rest as it was previously. Example below.
+  if (req.body.className !== undefined) updates.className = req.body.className;
 
-    ensure(Object.keys(updates).length > 0,
-        badRequest('No updatable fields provided'));
-    //don't need spread operator at this point, but could be needed for future versions
-    const updatedClass = classes.update({ id, className: updates.className, authorId: req.user.id });
+  ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));
+  //don't need spread operator at this point, but could be needed for future versions
+  const updatedClass = classes.update({ id, className: updates.className, authorId: req.user.id });
 
-     if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');
-    ensure(updatedClass, notFound('Class not found'));
+  if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');
+  ensure(updatedClass, notFound('Class not found'));
 
-    return res.ok(updatedClass);
+  return res.ok(updatedClass);
 }
 
 /**
@@ -189,14 +188,14 @@ export function updateClass(req, res) {
  * @param {import('express').Response} res
  */
 export function deleteClass(req, res) {
-    const { classes } = res.locals.repos;
+  const { classes } = res.locals.repos;
 
-    const id = req.params.id;
+  const id = req.params.id;
 
-    const result = classes.delete({ id, authorId: req.user.id });
+  const result = classes.delete({ id, authorId: req.user.id });
 
-    if (result === 'forbidden') throw forbidden('You cannot delete this class');
-    ensure(result, notFound('Class not found'));
+  if (result === 'forbidden') throw forbidden('You cannot delete this class');
+  ensure(result, notFound('Class not found'));
 
-    return res.noContent();
+  return res.noContent();
 }

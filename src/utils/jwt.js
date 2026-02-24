@@ -21,8 +21,7 @@ import jwt from 'jsonwebtoken';
  */
 
 export function signToken({ userId, secret }) {
-    return jwt.sign({ sub: userId }, secret, { expiresIn: '12h' });
-
+  return jwt.sign({ sub: userId }, secret, { expiresIn: '12h' });
 }
 /**
  * Verify and decode a JWT token.
@@ -33,5 +32,5 @@ export function signToken({ userId, secret }) {
  */
 
 export function verifyToken({ token, secret }) {
-    return jwt.verify(token, secret);
+  return jwt.verify(token, secret);
 }

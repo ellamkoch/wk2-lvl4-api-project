@@ -22,20 +22,20 @@
  *  - Calling repository methods
  *  - Returning HTTP responses
  */
-import { Router } from "express";
+import { Router } from 'express';
 
 import {
-    listAllClasses,
-    getClassById,
-    createClass,
-    updateClass,
-    deleteClass,
-    } from '#controllers/classes.controller';
-import  { listEntriesForClass, createEntry } from "#controllers/entries.controller";
-    import { requireAuth } from "#middleware/requireAuth";
-    import { requireJson } from "#middleware/requireJson";
+  listAllClasses,
+  getClassById,
+  createClass,
+  updateClass,
+  deleteClass,
+} from '#controllers/classes.controller';
+import { listEntriesForClass, createEntry } from '#controllers/entries.controller';
+import { requireAuth } from '#middleware/requireAuth';
+import { requireJson } from '#middleware/requireJson';
 
- /**
+/**
  * Express router for /classes routes.
  * Mounted in the main app via app.use('/classes', classesRouter)
  */
@@ -49,6 +49,6 @@ classesRouter.post('/', requireAuth, requireJson, createClass);
 classesRouter.put('/:id', requireAuth, requireJson, updateClass);
 classesRouter.delete('/:id', requireAuth, deleteClass);
 //Nests the entries inside the classes
-classesRouter.get('/:classId/entries', listEntriesForClass)
+classesRouter.get('/:classId/entries', listEntriesForClass);
 classesRouter.post('/:classId/entries', requireAuth, requireJson, createEntry);
 // classesRouter.put('/:classId/entries/:entryId', requireAuth, requireJson, updateEntry);

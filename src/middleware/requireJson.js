@@ -13,13 +13,11 @@
  * @returns {void}
  */
 
-import { unsupportedMediaType } from "#utils/httpErrors";
+import { unsupportedMediaType } from '#utils/httpErrors';
 
 export function requireJson(req, _res, next) {
-    if (['POST', 'PUT', 'PATCH'].includes(req.method) && !req.is('application/json')) {
-        return next(unsupportedMediaType('Content-Type must be application/json'));
-    }
-    next();
-
-    }
-
+  if (['POST', 'PUT', 'PATCH'].includes(req.method) && !req.is('application/json')) {
+    return next(unsupportedMediaType('Content-Type must be application/json'));
+  }
+  next();
+}

@@ -40,9 +40,9 @@
  * Not required for Phase 1 rubric.
  */
 
-import { notFound, forbidden, badRequest } from "#utils/httpErrors";
-import { ensureFields, ensure } from "#utils/ensureFieldsGuard";
-import { parsePagination } from "#utils/pagination";
+import { notFound, forbidden, badRequest } from '#utils/httpErrors';
+import { ensureFields, ensure } from '#utils/ensureFieldsGuard';
+import { parsePagination } from '#utils/pagination';
 
 /**
  * GET /classes/:classId/entries (PUBLIC)
@@ -57,21 +57,19 @@ import { parsePagination } from "#utils/pagination";
  */
 
 export function listEntriesForClass(req, res) {
-    const { classes, entries } = res.locals.repos;
+  const { classes, entries } = res.locals.repos;
 
-    const classId = req.params.classId;
+  const classId = req.params.classId;
 
-    ensure(classes.getById(classId), notFound('Class not found'));
+  ensure(classes.getById(classId), notFound('Class not found'));
 
-    const { limit, page, offset } = parsePagination(req.query);
+  const { limit, page, offset } = parsePagination(req.query);
 
-    const result = entries.listByClassId
-    (classId, { limit, offset });
+  const result = entries.listByClassId(classId, { limit, offset });
 
-    return res.ok(result.entriesList, {
-        pagination: { limit, page, total: result.total },
-    });
-
+  return res.ok(result.entriesList, {
+    pagination: { limit, page, total: result.total },
+  });
 }
 
 /**
@@ -87,21 +85,19 @@ export function listEntriesForClass(req, res) {
  */
 
 export function createEntry(req, res) {
+  const { classes, entries } = res.locals.repos;
+  const classId = req.params.classId;
 
-    const { classes, entries } = res.locals.repos;
-    const classId = req.params.classId;
+  ensure(classes.getById(classId), notFound('Class not found'));
+  ensureFields(req.body, ['horseName']);
 
-    ensure(classes.getById(classId), notFound('Class not found'));
-    ensureFields(req.body, ['horseName']);
+  const newEntry = entries.create({
+    classId,
+    horseName: req.body.horseName,
+    authorId: req.user.id,
+  });
 
-    const newEntry = entries.create({
-        classId,
-        horseName: req.body.horseName,
-        authorId: req.user.id
-    });
-
-    return res.created(newEntry);
-
+  return res.created(newEntry);
 }
 
 /**
@@ -121,30 +117,28 @@ export function createEntry(req, res) {
  * @param {import('express').Response} res
  */
 export function updateEntry(req, res) {
-    const { entries, classes } = res.locals.repos;
-    const id = req.params.entryId;
-    const updates = {};
+  const { entries, classes } = res.locals.repos;
+  const id = req.params.entryId;
+  const updates = {};
 
-    if (req.body?.horseName !== undefined) updates.horseName = req.body.horseName;
+  if (req.body?.horseName !== undefined) updates.horseName = req.body.horseName;
 
-    ensure(
-        Object.keys(updates).length > 0,
-    badRequest('No updatable fields provided'));
+  ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));
 
-    const entry = entries.getById(id);
-    ensure(entry, notFound('Entry not found'));
+  const entry = entries.getById(id);
+  ensure(entry, notFound('Entry not found'));
 
-    ensure(classes.getById(entry.classId), notFound('Class not found'));
+  ensure(classes.getById(entry.classId), notFound('Class not found'));
 
-    const updatedEntry = entries.update({
-        id,
-        horseName: updates.horseName,
-        authorId: req.user.id
-    });
+  const updatedEntry = entries.update({
+    id,
+    horseName: updates.horseName,
+    authorId: req.user.id,
+  });
 
-    if (updatedEntry === 'forbidden') throw forbidden('You cannot update this entry');
+  if (updatedEntry === 'forbidden') throw forbidden('You cannot update this entry');
 
-    return res.ok(updatedEntry);
+  return res.ok(updatedEntry);
 }
 
 /**
@@ -163,17 +157,16 @@ export function updateEntry(req, res) {
  * @param {import('express').Response} res
  */
 export function deleteEntry(req, res) {
-    const { entries, classes } = res.locals.repos;
-    const id = req.params.entryId;
+  const { entries, classes } = res.locals.repos;
+  const id = req.params.entryId;
 
-    const entry = entries.getById(id);
-    if (!entry) throw notFound('Entry not found');
-    ensure(classes.getById(entry.classId), notFound('Class not found'));
+  const entry = entries.getById(id);
+  if (!entry) throw notFound('Entry not found');
+  ensure(classes.getById(entry.classId), notFound('Class not found'));
 
-    const result = entries.delete({ id, authorId: req.user.id });
+  const result = entries.delete({ id, authorId: req.user.id });
 
-    if (result === 'forbidden') throw forbidden('You cannot delete this entry');
+  if (result === 'forbidden') throw forbidden('You cannot delete this entry');
 
-    return res.noContent();
-
+  return res.noContent();
 }

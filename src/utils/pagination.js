@@ -11,7 +11,7 @@
  *
  * Used in controllers before calling repositories.
  */
-import { badRequest } from "#utils/httpErrors";
+import { badRequest } from '#utils/httpErrors';
 
 /**
  * Parses pagination parameters from query objects.
@@ -30,22 +30,21 @@ import { badRequest } from "#utils/httpErrors";
  */
 
 export function parsePagination(query = {}) {
-    const rawLimit = query.limit ?? 20;
-    const rawPage = query.page ?? 1;
+  const rawLimit = query.limit ?? 20;
+  const rawPage = query.page ?? 1;
 
-    const parsedLimit = Number(rawLimit);
+  const parsedLimit = Number(rawLimit);
 
-    if (parsedLimit > 100) {
-        throw badRequest('Limit cannot exceed 100');
-    }
+  if (parsedLimit > 100) {
+    throw badRequest('Limit cannot exceed 100');
+  }
 
-    const limit = clampInt(rawLimit, 1, 100, 20);
-    const page = clampInt(rawPage, 1, Number.MAX_SAFE_INTEGER, 1);
+  const limit = clampInt(rawLimit, 1, 100, 20);
+  const page = clampInt(rawPage, 1, Number.MAX_SAFE_INTEGER, 1);
 
-    const offset = (page - 1) * limit;
+  const offset = (page - 1) * limit;
 
-    return { limit, page, offset};
-
+  return { limit, page, offset };
 }
 /**
  * Clamps a value to an integer within a given range.
@@ -61,12 +60,12 @@ export function parsePagination(query = {}) {
  * @returns {number}
  */
 function clampInt(value, min, max, fallback) {
-    const n = Number(value);
+  const n = Number(value);
 
-    if (!Number.isFinite(n)) return fallback;
+  if (!Number.isFinite(n)) return fallback;
 
-    const i = Math.trunc(n);
-    if (i < min) return min;
-    if (i > max) return max;
-    return i;
+  const i = Math.trunc(n);
+  if (i < min) return min;
+  if (i > max) return max;
+  return i;
 }

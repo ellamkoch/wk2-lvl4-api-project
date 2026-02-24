@@ -21,9 +21,9 @@ import bcrypt from 'bcryptjs';
  */
 
 export function hashPassword(password) {
-    const saltRounds = 10;
+  const saltRounds = 10;
 
-    return bcrypt.hashSync(password, saltRounds);
+  return bcrypt.hashSync(password, saltRounds);
 }
 
 /**
@@ -34,6 +34,6 @@ export function hashPassword(password) {
  * @returns {Promise<boolean>}
  */
 
-export function verifyPassword(password, hash){
-    return bcrypt.compareSync(password, hash);
+export function verifyPassword(password, hash) {
+  return bcrypt.compareSync(password, hash);
 }

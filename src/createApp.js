@@ -21,7 +21,6 @@
  * @returns {import('express').Express}
  */
 
-
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -36,41 +35,42 @@ import { authRouter } from '#routes/auth.routes';
 import { entriesRouter } from '#routes/entries.routes';
 
 export function createApp({ repos, config = {} }) {
-    const app = express();
+  const app = express();
 
-    app.locals.config = config;
+  app.locals.config = config;
 
-    app.use(express.json());
+  app.use(express.json());
 
-    app.use(helmet());
+  app.use(helmet());
 
-    app.use(morgan('dev'));
+  app.use(morgan('dev'));
 
-    app.use((req, _res, next) => {//not needed perhaps?
-        next();
-    })
+  app.use((req, _res, next) => {
+    //not needed perhaps?
+    next();
+  });
 
-    app.use(requestId);
+  app.use(requestId);
 
-    app.use(respond);
+  app.use(respond);
 
-    app.get('/health', (req, res) => {
-        return res.ok({ status: 'ok' });
-    });
+  app.get('/health', (req, res) => {
+    return res.ok({ status: 'ok' });
+  });
 
-    app.use((_req, res, next) => {
-        res.locals.repos = repos;
-        next();
-    });
+  app.use((_req, res, next) => {
+    res.locals.repos = repos;
+    next();
+  });
 
-    //routes
-    app.use('/classes', classesRouter);
-    app.use('/auth', authRouter);
-    app.use('/entries', entriesRouter);
+  //routes
+  app.use('/classes', classesRouter);
+  app.use('/auth', authRouter);
+  app.use('/entries', entriesRouter);
 
-    app.use(notFoundHandler);
+  app.use(notFoundHandler);
 
-    app.use(errorHandler);
+  app.use(errorHandler);
 
-    return app;
+  return app;
 }

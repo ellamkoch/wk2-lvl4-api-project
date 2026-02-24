@@ -19,23 +19,21 @@
 import crypto from 'crypto';
 
 export function createUsersRepo() {
+  const users = [];
 
-    const users = [];
+  return {
+    create(data) {
+      const user = { id: crypto.randomUUID(), ...data };
+      users.push(user);
+      return user;
+    },
 
-    return {
+    findByEmail(email) {
+      return users.find((u) => u.email === email) ?? null;
+    },
 
-        create(data) {
-            const user = { id: crypto.randomUUID(), ...data };
-            users.push(user);
-            return user;
-        },
-
-        findByEmail(email) {
-            return users.find((u) => u.email === email) ?? null;
-        },
-
-        findById(id) {
-            return users.find((u) => u.id === id) ?? null;
-        },
-    };
+    findById(id) {
+      return users.find((u) => u.id === id) ?? null;
+    },
+  };
 }

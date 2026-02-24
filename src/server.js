@@ -30,12 +30,11 @@ const env = ensureEnv(); //validates env variables at startup. fails fast if con
 const repos = await createRepos();
 
 const app = createApp({
-    repos,
-    config: { JWT_SECRET: env.JWT_SECRET },
+  repos,
+  config: { JWT_SECRET: env.JWT_SECRET },
 });
 
 // Starts HTTP server and listen on configured port.
 app.listen(env.PORT, () => {
-    console.log(`IT'S ALIVE!!! This App is listening on http://localhost:${env.PORT}`);
+  console.log(`IT'S ALIVE!!! This App is listening on http://localhost:${env.PORT}`);
 });
-

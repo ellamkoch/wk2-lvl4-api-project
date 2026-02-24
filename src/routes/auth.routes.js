@@ -12,11 +12,9 @@
  * Phase: 1
  */
 
-
-import { Router} from 'express';
+import { Router } from 'express';
 import { registerUser, loginUser } from '#controllers/auth.controller';
 import { requireJson } from '#middleware/requireJson';
-import { requireAuth } from '#middleware/requireAuth';
 
 export const authRouter = Router();
 

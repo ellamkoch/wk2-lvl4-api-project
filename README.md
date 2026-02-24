@@ -6,42 +6,42 @@ This is a repo Phases 1 and 2 for my Level 4, Week 2 API project with CodeX.
 
 This project is part of a two-phase assignment:
 
-* **Phase 1:** In-memory API (no database)
-* **Phase 2:** Supabase Postgres + Prisma ORM v7 integration
+- **Phase 1:** In-memory API (no database)
+- **Phase 2:** Supabase Postgres + Prisma ORM v7 integration
 
 Phase 1 focuses on:
 
-* Clean application structure
-* Environment validation
-* Security best practices
-* Consistent API response envelope
-* Authentication (JWT)
-* Ownership enforcement
-* Test coverage
+- Clean application structure
+- Environment validation
+- Security best practices
+- Consistent API response envelope
+- Authentication (JWT)
+- Ownership enforcement
+- Test coverage
 
 The goal is to build a stable, production-ready API foundation before introducing persistence.
 
 ## Table of Contents
 
-* [Overview]()
-* [Phase 1 – In-Memory Resource API]()
+- [Overview]()
+- [Phase 1 – In-Memory Resource API]()
 
-  * [Design Philosophy]()
-  * [Phase 1 Goals]()
-* [Future Phase (Phase 2 Preview)]()
+  - [Design Philosophy]()
+  - [Phase 1 Goals]()
+- [Future Phase (Phase 2 Preview)]()
 
-  * [Tech Stack (Phase 1)]()
-  * [Project Structure]()
-* [How to Run/Install]()
+  - [Tech Stack (Phase 1)]()
+  - [Project Structure]()
+- [How to Run/Install]()
 
-  * [Environment Setup]()
-  * [Running the Server]()
-* [Scripts]()
-* [Author Notes]()
+  - [Environment Setup]()
+  - [Running the Server]()
+- [Scripts]()
+- [Author Notes]()
 
-  * [Architecture]()
-  * [Health Check Endpoint]()
-  * [Request Correlation]()
+  - [Architecture]()
+  - [Health Check Endpoint]()
+  - [Request Correlation]()
 
 ## Phase 1 – In-Memory Resource API
 
@@ -53,28 +53,41 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 
 ### Design Philosophy
 
-* Fail fast on invalid configuration
-* Keep startup logic separate from app construction
-* Maintain consistent response shape
-* Enforce ownership at the application layer
-* Prepare for database integration without refactoring the API contract
+- Fail fast on invalid configuration
+- Keep startup logic separate from app construction
+- Maintain consistent response shape
+- Enforce ownership at the application layer
+- Prepare for database integration without refactoring the API contract
 
 ### Phase 1 Goals
 
-* [x] Bootable Express server
-* [x] Environment validation
-* [x] Security middleware
-* [x] Logging middleware
-* [x] Global response helper
-* [x] Global error handler
-* [x] JWT auth routes
-* [x] Primary resource (classes)
-* [x] Related resource (entries)
-* [x] Nested routes (one-to-many)
-* [x] Cascade delete (class → entries)
-* [x] Ownership enforcement
-* [x] Guard pattern consistency pass (ensure refactor)
-* [x] Tests (happy path + error path)
+- [x] Bootable Express server
+- [x] Environment validation
+- [x] Security middleware
+- [x] Logging middleware
+- [x] Global response helper
+- [x] Global error handler
+- [x] JWT auth routes
+- [x] Primary resource (classes)
+- [x] Related resource (entries)
+- [x] Nested routes (one-to-many)
+- [x] Cascade delete (class → entries)
+- [x] Ownership enforcement
+- [x] Guard pattern consistency pass (ensure refactor)
+- [x] Tests (happy path + error path)
+- [x] UID-based system IDS using crypto.randomUUID()
+
+### ID Strategy (Phase 1 Requirement)
+
+All system identifiers (`id`, `classId`, `authorId`) are generated using: `crypto.randomUUID()`
+
+IDs are treated as opaque strings and are never parsed or coerced to numbers.
+
+This ensures:
+
+* Rubric compliance (Phase 1 requirement)
+* Stable identity before database integration
+* Easier to update for Phase 2 requirements
 
 ### Authentication (Phase 1)
 
@@ -110,8 +123,8 @@ Returns a paginated list of all classes.
 
 Query parameters (optional):
 
-* `limit`
-* `page`
+* limit
+* page (internally converted to offset)
 
 Example response:
 
@@ -120,7 +133,9 @@ Example response:
   "ok": true,
   "requestId": "uuid",
   "data": [
-    { "id": 1, "className": "Hunter Under Saddle", "authorId": 1 }
+    { "id": **"550e8400-e29b-41d4-a716-446655440000"**,
+  "className": **"Hunter Under Saddle"**,
+  "authorId": **"user-uuid"** }
   ],
   "meta": {
     "pagination": {
@@ -163,10 +178,10 @@ Updates a class if owned by the authenticated user.
 
 Returns:
 
-* 200 on success
-* 404 if not found
-* 403 if not owner
-* 400 if no updatable fields provided
+- 200 on success
+- 404 if not found
+- 403 if not owner
+- 400 if no updatable fields provided
 
 ##### DELETE `/classes/:id`
 
@@ -174,9 +189,9 @@ Deletes a class if owned by the authenticated user.
 
 Returns:
 
-* 204 No Content
-* 404 if not found
-* 403 if not owner
+- 204 No Content
+- 404 if not found
+- 403 if not owner
 
 ##### Ownership Model
 
@@ -184,8 +199,8 @@ Classes are globally visible.
 
 Ownership is enforced only for:
 
-* Updates
-* Deletions
+- Updates
+- Deletions
 
 Ownership is determined via the `sub` claim in the JWT payload (`req.user.id`).
 
@@ -206,8 +221,8 @@ Each entry record contains:
 
 Entries form a **one-to-many relationship** :
 
-* One class → many entries
-* Each entry belongs to exactly one class
+- One class → many entries
+- Each entry belongs to exactly one class
 
 ##### Route Design
 
@@ -215,18 +230,18 @@ Phase 1 uses a hybrid route structure:
 
 **Nested routes (collection operations):**
 
-* `GET /classes/:classId/entries`
-* `POST /classes/:classId/entries`
+- `GET /classes/:classId/entries`
+- `POST /classes/:classId/entries`
 
 **Flat routes (single resource operations):**
 
-* `PUT /entries/:entryId`
-* `DELETE /entries/:entryId`
+- `PUT /entries/:entryId`
+- `DELETE /entries/:entryId`
 
 This design keeps:
 
-* Listing/creation logically grouped under the parent class
-* Update/delete operations simple and resource-oriented
+- Listing/creation logically grouped under the parent class
+- Update/delete operations simple and resource-oriented
 
 ##### Public Endpoint
 
@@ -236,13 +251,13 @@ Returns a paginated list of entries for a specific class.
 
 Query parameters (optional):
 
-* `limit`
-* `page`
+- `limit`
+- `page`
 
 Returns:
 
-* 200 with paginated entries
-* 404 if class does not exist
+- 200 with paginated entries
+- 404 if class does not exist
 
 ##### Protected Endpoints (JWT Required)
 
@@ -262,8 +277,8 @@ Request body:
 
 Returns:
 
-* 201 Created
-* 404 if class does not exist
+- 201 Created
+- 404 if class does not exist
 
 ##### PUT `/entries/:entryId`
 
@@ -271,10 +286,10 @@ Updates an entry if owned by the authenticated user.
 
 Returns:
 
-* 200 on success
-* 404 if entry not found
-* 404 if parent class no longer exists
-* 403 if not owner
+- 200 on success
+- 404 if entry not found
+- 404 if parent class no longer exists
+- 403 if not owner
 
 ##### DELETE `/entries/:entryId`
 
@@ -282,17 +297,17 @@ Deletes an entry if owned by the authenticated user.
 
 Returns:
 
-* 204 No Content
-* 404 if entry not found
-* 404 if parent class no longer exists
-* 403 if not owner
+- 204 No Content
+- 404 if entry not found
+- 404 if parent class no longer exists
+- 403 if not owner
 
 #### Cascade Behavior
 
 When a class is deleted:
 
-* All entries belonging to that class are removed.
-* This preserves in-memory integrity in Phase 1.
+- All entries belonging to that class are removed.
+- This preserves in-memory integrity in Phase 1.
 
 Cascade is handled at the application layer and will later transition to database-level cascading in Phase 2.
 
@@ -302,47 +317,50 @@ Before implementing tests, I performed a validation and guard consistency pass a
 
 #### What Was Updated
 
-* Standardized use of `ensure(condition, error)` for guard logic.
-* Replaced manual `if (...) throw` validation blocks with `ensure`.
-* Fixed an inverted guard condition in `updateClass`:
-  * Corrected to:`ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));`
+- Standardized use of `ensure(condition, error)` for guard logic.
+- Replaced manual `if (...) throw` validation blocks with `ensure`.
+- Fixed an inverted guard condition in `updateClass`:
+  - Corrected to:`ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));`
 
 ## Test Coverage (Phase 1)
 
 Phase 1 includes integration-level API tests using **Vitest** and **Supertest** .
 
+Test coverage satisfies the rubric minimum:
+2 happy paths, 2 error paths (validation + not found), and 1 authentication rejection test.
+
 Tests cover:
 
 ### Authentication
 
-* Register user (201)
-* Login user (200)
-* JWT token returned on success
+- Register user (201)
+- Login user (200)
+- JWT token returned on success
 
 ### Classes Resource
 
-* 401 when creating without auth
-* 201 create class
-* 200 list classes with pagination meta
-* 403 wrong owner cannot update
-* 204 owner can delete
-* 404 delete not found
-* 400 update with empty body
+- 401 when creating without auth
+- 201 create class
+- 200 list classes with pagination meta
+- 403 wrong owner cannot update
+- 204 owner can delete
+- 404 delete not found
+- 400 update with empty body
 
 ### Entries Resource
 
 Nested routes:
 
-* 201 create entry under class
-* 200 list entries for class
+- 201 create entry under class
+- 200 list entries for class
 
 Flat routes:
 
-* 200 update entry
-* 204 delete entry
-* 400 update with empty body
-* 404 entry not found
-* 403 wrong owner cannot update
+- 200 update entry
+- 204 delete entry
+- 400 update with empty body
+- 404 entry not found
+- 403 wrong owner cannot update
 
 All tests run against a fresh in-memory repository instance per test to ensure isolation.
 
@@ -352,20 +370,20 @@ Run tests with: `npm run test`
 
 Phase 2 will:
 
-* Replace in-memory repositories with Prisma ORM
-* Connect to Supabase Postgres
-* Add migrations and seeding
-* Add query features (include/filter/count)
-* Add CI database integration
+- Replace in-memory repositories with Prisma ORM
+- Connect to Supabase Postgres
+- Add migrations and seeding
+- Add query features (include/filter/count)
+- Add CI database integration
 
 The API contract (routes + response format) will remain unchanged.
 
-* Ensured all `badRequest()` calls pass a string message (not an object).
-* Verified consistent error mapping across resources:
-  * **400** → Invalid input
-  * **401** → Authentication failure (middleware)
-  * **403** → Ownership violation
-  * **404** → Resource not found
+- Ensured all `badRequest()` calls pass a string message (not an object).
+- Verified consistent error mapping across resources:
+  - **400** → Invalid input
+  - **401** → Authentication failure (middleware)
+  - **403** → Ownership violation
+  - **404** → Resource not found
 
 ### Why This Refactor Was Important
 
@@ -381,17 +399,17 @@ This refactor improved readability and prepared the codebase for structured test
 
 ### Tech Stack (Phase 1)
 
-* Node.js (ES Modules)
-* Express
-* Helmet (security headers)
-* Morgan (request logging)
-* dotenv (environment variables)
-* jsonwebtoken (JWT authentication)
-* bcryptjs (password hashing)
-* Vitest
-* Supertest
-* ESLint
-* Prettier
+- Node.js (ES Modules)
+- Express
+- Helmet (security headers)
+- Morgan (request logging)
+- dotenv (environment variables)
+- jsonwebtoken (JWT authentication)
+- bcryptjs (password hashing)
+- Vitest
+- Supertest
+- ESLint
+- Prettier
   Vitest + Supertest (integration-level API testing)
 
 ### Project Structure
@@ -434,8 +452,8 @@ JWT_SECRET=your-super-long-random-string-32+chars
 
 ### Required Variables
 
-* **PORT** — Port the server will run on
-* **JWT_SECRET** — Secret used to sign JWT tokens (must be 32+ characters)
+- **PORT** — Port the server will run on
+- **JWT_SECRET** — Secret used to sign JWT tokens (must be 32+ characters)
 
 Environment variables are validated at startup.
 
@@ -451,12 +469,12 @@ You should see: `App listening on http://localhost:3005 `
 
 ## Scripts
 
-* Development: `npm run dev`
-* Lint: `npm run lint`
-* Auto-fix lint issues: `npm run lint:fix
-* Check formatting: `npm run format:check`
-* Write formatting: `npm run format:write`
-* Run tests: `npm run test`
+- Development: `npm run dev`
+- Lint: `npm run lint`
+- Auto-fix lint issues: `npm run lint:fix`
+- Check formatting: `npm run format:check`
+- Write formatting: `npm run format:write`
+- Run tests: `npm run test`
 
 ## Author Notes
 
@@ -468,14 +486,14 @@ The architecture is structured early to support a smooth migration to a database
 
 This project uses a layered structure:
 
-* **server.js** → application entry point
-* **createApp.js** → Express app factory
-* **middleware/** → reusable middleware
-* **controllers/** → request handling logic
-* **repos/** → in-memory data layer (users + classes in Phase 1)
-* **routes/** → route definitions
-* **utils/** → shared helpers (env, jwt, etc.)
-* **tests/** → API tests
+- **server.js** → application entry point
+- **createApp.js** → Express app factory
+- **middleware/** → reusable middleware
+- **controllers/** → request handling logic
+- **repos/** → in-memory data layer (users + classes in Phase 1)
+- **routes/** → route definitions
+- **utils/** → shared helpers (env, jwt, etc.)
+- **tests/** → API tests
 
 Phase 1 includes a one-to-many relationship (classes → entries) implemented with nested routes and application-level cascade deletion.
 
@@ -498,20 +516,21 @@ All responses follow a consistent JSON envelope.
 
 ```
 {
-  "ok": false,
-  "requestId": "uuid",
+  "ok": **false**,
   "error": {
-    "code": "not_found",
-    "message": "Route not found"
+    "code": **"NOT_FOUND"**,
+    "message": **"Route not found"**,
+    "details": **null**,
+    "requestId": **"uuid"**
   }
 }
 ```
 
 This structure ensures:
 
-* Stable frontend integration
-* Predictable error handling
-* Easy request tracing via `requestId`
+- Stable frontend integration
+- Predictable error handling
+- Easy request tracing via `requestId`
 
 ### Health Check Endpoint
 
@@ -529,10 +548,10 @@ Example response:
 
 This confirms:
 
-* Server booted
-* Middleware loaded
-* JSON parsing works
-* Security headers active
+- Server booted
+- Middleware loaded
+- JSON parsing works
+- Security headers active
 
 ### Authentication Endpoints
 
@@ -562,10 +581,10 @@ Returns a signed JWT token on success.
 
 Every request receives a unique `requestId`.
 
-* Reuses incoming `X-Request-Id` header if provided
-* Otherwise generates a UUID
-* Echoes the value back in the `X-Request-Id` response header
-* Includes it in all response envelopes
+- Reuses incoming `X-Request-Id` header if provided
+- Otherwise generates a UUID
+- Echoes the value back in the `X-Request-Id` response header
+- Includes it in all response envelopes
 
 This enables easier debugging and production log tracing.
 

@@ -1,39 +1,51 @@
 /**
- * Users Repository (In-Memory)
+ * prisma.user Repository (Prisma Backed)
  *
- * Stores user records for Phase 1.
+ * This repository provides a thin wrapper around the Prisma client for
+ * working with user records. All operations are persisted to the database.
  *
- * Data shape:
- * { id, email, passwordHash }
+ * Responsibilities:
+ *  - Create users
+ *  - Lookup users by email or id
  *
- * Data resets on server restart.
+ * This repo does NOT:
+ *  - Handle authentication logic
+ *  - Hash passwords (done prior to calling `create`)
+ *  - Interact with HTTP/Express
  *
- * Phase: 1
+ * Return contracts follow Prisma's output directly.
  */
-/**
- * Create a new user.
- *
- * @param {{ email: string, passwordHash: string }} input
- * @returns {{ id: string, email: string, passwordHash: string }}
- */
-import crypto from 'crypto';
 
-export function createUsersRepo() {
-  const users = [];
-
+export function createUsersRepo(prisma) {
   return {
-    create(data) {
-      const user = { id: crypto.randomUUID(), ...data };
-      users.push(user);
-      return user;
+    /**
+     * Insert a new user record.
+     *
+     * @param {{ email: string, passwordHash: string }} data
+     * @returns {{ id: string, email: string, passwordHash: string }}
+     */
+    async create(data) {
+      return prisma.user.create({ data });
     },
 
-    findByEmail(email) {
-      return users.find((u) => u.email === email) ?? null;
+    /**
+     * Lookup a user by their unique email address.
+     *
+     * @param {string} email
+     * @returns {Object|null}  User object or null if not found.
+     */
+    async findByEmail(email) {
+      return prisma.user.findUnique({ where: { email } });
     },
 
-    findById(id) {
-      return users.find((u) => u.id === id) ?? null;
+    /**
+     * Lookup a user by their primary key.
+     *
+     * @param {string} id
+     * @returns {Object|null}  User object or null if not found.
+     */
+    async findById(id) {
+      return prisma.user.findUnique({ where: { id } });
     },
   };
 }

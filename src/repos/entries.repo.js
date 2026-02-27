@@ -1,10 +1,12 @@
 /**
- * Entries Repository (Phase 1 - In-Memory)
+ * prisma.entry Repository (Phase 2 - Prisma Backed)
  *
- * This repository handles data operations for entries.
+ * This repository handles data operations for prisma.entry using the
+ * Prisma client. It no longer relies on in-memory storage – all actions
+ * are persisted to the database.
  *
  * Responsibilities:
- *  - Store entry records in memory
+ *  - Perform CRUD operations via Prisma
  *  - Enforce ownership checks
  *  - Support nested listing by class
  *  - Apply optional windowing (limit/offset)
@@ -15,115 +17,115 @@
  *  - Know about Express
  *
  * Return contracts:
- *  - success → object / array / { entriesList, total }
+ *  - success → object / array / { entryList, total }
  *  - not found → null
  *  - wrong owner → 'forbidden'
  */
 
-import { applyWindow } from '#utils/applyWindow';
-import crypto from 'crypto';
-
-export function createEntriesRepo() {
-  const entries = [];
-
-  return {
+export function createEntriesRepo(prisma) {
+    return {
     /**
      * Public: list all entries for a specific class.
      *
-     * @param {number|string} classId
+     * @param {string} classId  Class UUID to filter by.
      * @param {Object} params
-     * @param {number} [params.limit]
-     * @param {number} [params.offset]
-     * @returns {{ entriesList: any[], total: number }}
+     * @param {number} [params.limit]      Optional maximum number of items.
+     * @param {number} [params.offset]     Optional number of items to skip.
+     * @returns {{ entryList: any[], total: number }}
      */
+    async listByClassId(classId, { limit, offset } = {}) {
+      const query = {
+        where: { classId },
+        orderBy: { id: 'asc' },
+      };
 
-    listByClassId(classId, { limit, offset } = {}) {
-      const all = entries.filter((e) => e.classId === classId);
-      const total = all.length;
+      if (limit !== undefined) query.take = limit;
+      if (offset !== undefined) query.skip = offset;
 
-      const entriesList = applyWindow(all, { limit, offset });
-
-      return { entriesList, total };
+      const [ entryList, total ] = await Promise.all([
+        prisma.entry.findMany(query),
+        prisma.entry.count({ where: { classId } }),
+      ]);
+      return { entryList, total };
     },
 
-    getById(id) {
-      return entries.find((e) => e.id === id) ?? null;
+    /**
+     * Public: get a single entry by id (no ownership restriction).
+     *
+     * @param {string} id  Entry UUID.
+     * @returns {Object|null}
+     */
+    async getById(id) {
+      return await prisma.entry.findUnique({ where: { id } });
     },
     /**
      * Create a new entry under a class.
      *
      * @param {Object} params
-     * @param {number|string} params.classId
-     * @param {string} params.horseName
-     * @param {number|string} params.authorId
-     * @returns {{ id: number, classId: any, horseName: string, authorId: any }}
+     * @param {string} params.classId    Class UUID.
+     * @param {string} params.horseName  Horse name.
+     * @param {string} params.authorId   Author's UUID.
+     * @returns {{ id: string, classId: string, horseName: string, authorId: string }}
      */
 
-    create({ classId, horseName, authorId }) {
-      const newEntry = { id: crypto.randomUUID(), classId, horseName, authorId };
-      entries.push(newEntry);
-      return newEntry;
-    },
+  async create({ classId, horseName, authorId }) {
+    return prisma.entry.create({
+      data: { classId, horseName, authorId }
+    });
+  },
 
     /**
      * Update an entry if owned by the given author.
      *
      * @param {Object} params
-     * @param {number|string} params.id
-     * @param {string} params.horseName
-     * @param {number|string} params.authorId
+     * @param {string} params.id         Entry UUID.
+     * @param {string} params.horseName  New horse name.
+     * @param {string} params.authorId   Author's UUID for permission check.
      * @returns {Object | null | 'forbidden'}
      */
-    update({ id, horseName, authorId }) {
-      const updatedEntry = entries.find((e) => e.id === id) ?? null;
+    async update({ id, horseName, authorId }) {
+      const updatedEntry = await prisma.entry.findUnique({ where: { id } });
       if (!updatedEntry) return null;
       if (updatedEntry.authorId !== authorId) return 'forbidden';
 
-      updatedEntry.horseName = horseName;
-      return updatedEntry;
+      return prisma.entry.update({
+        where: { id },
+        data: { horseName },
+      });
     },
 
     /**
      * Delete an entry if owned by the given author.
      *
      * @param {Object} params
-     * @param {number|string} params.id
-     * @param {number|string} params.authorId
+     * @param {string} params.id         Entry UUID.
+     * @param {string} params.authorId   Author's UUID for permission check.
      * @returns {true | null | 'forbidden'}
      */
-
     // Roadmap (Phase 2+):
     // Consider soft-delete via status field (e.g., status: 'active' | 'scratched')
     // to support billing scenarios where scratched entries are still billable.
-    delete({ id, authorId }) {
-      const idx = entries.findIndex((e) => e.id === id);
-      if (idx === -1) return null;
+    async delete({ id, authorId }) {
+      const deletedEntry = await prisma.entry.findUnique({ where: { id } });
+      if (!deletedEntry) return null;
+      if (deletedEntry.authorId !== authorId) return 'forbidden';
 
-      if (entries[idx].authorId !== authorId) return 'forbidden';
-
-      entries.splice(idx, 1);
+      await prisma.entry.delete({ where: { id } });
       return true;
     },
-
-    // listByAuthorId( authorId, options = {} ){
-    //     const classEntries = entries.filter((e) => e.authorId === authorId);
-    //     return applyWindow(classEntries, options);
-    // },
 
     /**
      * Find an entry by id and verify ownership.
      *
      * @param {Object} params
-     * @param {number|string} params.id
-     * @param {number|string} params.authorId
+     * @param {string} params.id         Entry UUID.
+     * @param {string} params.authorId   Author's UUID for permission check.
      * @returns {Object | null | 'forbidden'}
      */
-
     // Roadmap:
-    // If using nested routes for update/delete,
-    // consider verifying entry.classId matches route param.
-    findByIdForAuthor({ id, authorId }) {
-      const found = entries.find((e) => e.id === id);
+    // If using nested routes for update/delete, consider verifying entry.classId matches route param.
+    async findByIdForAuthor({ id, authorId }) {
+      const found = await prisma.entry.findUnique({ where: { id } });
 
       if (!found) return null;
       if (found.authorId !== authorId) return 'forbidden';

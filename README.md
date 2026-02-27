@@ -746,3 +746,90 @@ Future roadmap enhancement:
 
 These are planned extensions and do not alter the current API contract.
 
+### Repository Completion (Users + Entries)
+
+This checkpoint completes the repository swap for all remaining resources.
+
+#### Users Repository
+
+The in-memory `users` repository was replaced with a Prisma-backed implementation.
+
+The repository now uses:
+
+* `prisma.user.create`
+* `prisma.user.findUnique`
+
+Methods implemented:
+
+* `create`
+* `findByEmail`
+* `findById`
+
+Authentication flow remains unchanged:
+
+* Password hashing still occurs in the password utility.
+* JWT logic remains in middleware.
+* Controllers were not rewritten.
+
+Return contracts remain consistent with Phase 1 expectations.
+
+#### Entries Repository
+
+The in-memory `entries` repository was replaced with Prisma queries.
+
+Implemented methods:
+
+* `listByClassId`
+* `getById`
+* `create`
+* `update`
+* `delete`
+* `findByIdForAuthor`
+
+Ownership enforcement remains inside the repository layer:
+
+* `null` → not found
+* `'forbidden'` → wrong owner
+
+Pagination now uses Prisma windowing:
+
+* `take`
+* `skip`
+
+Deterministic ordering is enforced using:`orderBy: { id: 'asc' }`
+
+Controllers were not modified during this migration, confirming the abstraction boundary remains intact.
+
+#### Repository Factory Refactor
+
+The `createRepos` factory was updated to initialize all Prisma-backed repositories:
+
+```
+return {
+  classes: createClassesRepo(prisma),
+  users: createUsersRepo(prisma),
+  entries: createEntriesRepo(prisma),
+};
+```
+
+The repository keys remain unchanged.
+
+Controllers continue accessing repositories through: `res.locals.repos`
+
+This confirms the engine swap did not alter the application contract.
+
+#### Shared Prisma Client
+
+A single Prisma client instance is created in:
+`src/db/prisma.js`
+
+Repositories receive the Prisma client through dependency injection.
+
+No repository or controller instantiates Prisma directly.
+
+This ensures:
+
+* Connection reuse
+* Predictable lifecycle management
+* Clean separation of infrastructure and business logic
+

@@ -128,7 +128,7 @@ export function createClassesRepo(prisma) {
     /**
      * List prisma.class records owned by a particular author.
      * Related entries are *not* included (use `getByIdWithEntries` or
-     * `listAll` for that behaviour).
+     * `listAll` for that behavior).
      *
      * @param {string} authorId  Owner's UUID.
      * @param {{ limit?: number, offset?: number }} options

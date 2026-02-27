@@ -1,12 +1,15 @@
 /**
- * Classes Repository (Phase 1 - In-Memory)
+ * prisma.class Repository (Phase 2 - Prisma Backed)
  *
- * This repository handles data operations for classes.
+ * This repository handles data operations for prisma.class using the
+ * Prisma client. It no longer relies on in-memory storage – all actions
+ * are persisted to the database.
  *
  * Responsibilities:
- *  - Store class records in memory
+ *  - Perform CRUD operations via Prisma
  *  - Enforce ownership checks
  *  - Apply optional windowing (limit/offset)
+ *  - listAll now also includes related entries by default
  *
  * This repo does NOT:
  *  - Parse HTTP query parameters
@@ -18,49 +21,71 @@
  *  - not found → null
  *  - wrong owner → 'forbidden'
  */
-import { applyWindow } from '#utils/applyWindow';
-import crypto from 'crypto';
 
-export function createClassesRepo() {
-  const classes = [];
-
+export function createClassesRepo(prisma) {
   return {
     /**
-     * Public: list all classes (no ownership restrictions).
+     * Public: list all prisma.class records (no ownership restrictions).
+     * Related `entries` are included on every returned class by default.
      *
      * @param {Object} params
-     * @param {number} [params.limit]
-     * @param {number} [params.offset]
-     * @returns {{ classList: any[], total: number }}
+     * @param {number} [params.limit]      Optional maximum number of items.
+     * @param {number} [params.offset]     Optional number of items to skip.
+     * @returns {{ classList: any[], total: number }}  `classList` items each
+     *   include an `entries` array (related records are fetched by default).
      */
-    listAll({ limit, offset } = {}) {
-      const all = classes;
-      const classList = applyWindow(all, { limit, offset });
 
-      return { classList, total: all.length };
+    async listAll({ limit, offset } = {}) {
+      const query = { orderBy: { id: 'asc' } };
+
+      if (limit !== undefined) query.take = limit;
+      if (offset !== undefined) query.skip = offset;
+
+      const [classList, total] = await Promise.all([
+        prisma.class.findMany(query),
+        prisma.class.count(),
+      ]);
+      return { classList, total };
     },
 
     /**
      * Public: get a single class by id (no ownership restriction).
      *
+     * Note: this method currently returns only the class record itself;
+     * related entries are NOT included. (Use listAll for entry inclusion.)
+     *
      * @param {number|string} id
      * @returns {Object|null}
      */
-    getById(id) {
-      return classes.find((c) => c.id === id) ?? null;
+    async getById(id) {
+      return await prisma.class.findUnique({ where: { id } });
     },
+
+    /**
+     * Public: return a single class along with its related entries.
+     *
+     * @param {string} id  Class primary key (UUID).
+     * @returns {Object|null}  Includes `entries` array if found.
+     */
+    async getByIdWithEntries(id) {
+      return prisma.class.findUnique({
+        where: { id },
+        include: { entries: true },
+      });
+    },
+
     /**
      * Create a new class owned by a user.
      *
      * @param {Object} params
      * @param {string} params.className
      * @param {number|string} params.authorId
-     * @returns {{ id: number, className: string, authorId: any }}
+     * @returns {{ id: string, className: string, authorId: string }}
      */
-    create({ className, authorId }) {
-      const newClass = { id: crypto.randomUUID(), className, authorId };
-      classes.push(newClass);
-      return newClass;
+    async create({ className, authorId }) {
+      return prisma.class.create({
+        data: { className, authorId },
+      });
     },
 
     /**
@@ -72,13 +97,15 @@ export function createClassesRepo() {
      * @param {number|string} params.authorId
      * @returns {Object | null | 'forbidden'}
      */
-    update({ id, className, authorId }) {
-      const updatedClass = classes.find((c) => c.id === id) ?? null;
+    async update({ id, className, authorId }) {
+      const updatedClass = await prisma.class.findUnique({ where: { id } });
       if (!updatedClass) return null;
       if (updatedClass.authorId !== authorId) return 'forbidden';
 
-      updatedClass.className = className;
-      return updatedClass;
+      return prisma.class.update({
+        where: { id },
+        data: { className },
+      });
     },
 
     /**
@@ -89,38 +116,44 @@ export function createClassesRepo() {
      * @param {number|string} params.authorId
      * @returns {true | null | 'forbidden'}
      */
-    delete({ id, authorId }) {
-      const idx = classes.findIndex((c) => c.id === id);
-      if (idx === -1) return null;
+    async delete({ id, authorId }) {
+      const deletedClass = await prisma.class.findUnique({ where: { id } });
+      if (!deletedClass) return null;
+      if (deletedClass.authorId !== authorId) return 'forbidden';
 
-      if (classes[idx].authorId !== authorId) return 'forbidden';
-
-      classes.splice(idx, 1);
+      await prisma.class.delete({ where: { id } });
       return true;
     },
 
     /**
-     * List classes by author without total metadata.
+     * List prisma.class records owned by a particular author.
+     * Related entries are *not* included (use `getByIdWithEntries` or
+     * `listAll` for that behaviour).
      *
-     * @param {number|string} authorId
+     * @param {string} authorId  Owner's UUID.
      * @param {{ limit?: number, offset?: number }} options
-     * @returns {any[]}
+     * @returns {any[]}  Array of class objects without `entries`.
      */
-    listByAuthorId(authorId, options = {}) {
-      const classList = classes.filter((c) => c.authorId === authorId);
-      return applyWindow(classList, options);
+    async listByAuthorId(authorId, { limit, offset } = {}) {
+      return prisma.class.findMany({
+        where: { authorId },
+        skip: offset,
+        take: limit,
+        orderBy: { id: 'asc' },
+      });
     },
 
     /**
-     * Find a class by id and verify ownership.
+     * Find a class by id and verify ownership. Returned object does not
+     * include associated entries.
      *
      * @param {Object} params
-     * @param {number|string} params.id
-     * @param {number|string} params.authorId
+     * @param {string} params.id         Class UUID.
+     * @param {string} params.authorId   Author's UUID for permission check.
      * @returns {Object | null | 'forbidden'}
      */
-    findByIdForAuthor({ id, authorId }) {
-      const found = classes.find((c) => c.id === id);
+    async findByIdForAuthor({ id, authorId }) {
+      const found = await prisma.class.findUnique({ where: { id } });
 
       if (!found) return null;
       if (found.authorId !== authorId) return 'forbidden';

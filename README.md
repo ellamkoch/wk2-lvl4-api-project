@@ -23,25 +23,37 @@ The goal is to build a stable, production-ready API foundation before introducin
 
 ## Table of Contents
 
+## Table of Contents
+
 - [Overview]()
 - [Phase 1 – In-Memory Resource API]()
-
   - [Design Philosophy]()
   - [Phase 1 Goals]()
-- [Future Phase (Phase 2 Preview)]()
-
-  - [Tech Stack (Phase 1)]()
-  - [Project Structure]()
+  - [ID Strategy (Phase 1 Requirement)]()
+  - [Authentication (Phase 1)]()
+  - [Classes Resource (Phase 1)]()
+  - [Entries Resource (Phase 1)]()
+  - [Cascade Behavior]()
+  - [Guard Pattern Consistency Pass]()
+  - [Test Coverage (Phase 1)]()
 - [How to Run/Install]()
-
   - [Environment Setup]()
   - [Running the Server]()
 - [Scripts]()
 - [Author Notes]()
-
   - [Architecture]()
+  - [Response & Error Envelope]()
   - [Health Check Endpoint]()
+  - [Authentication Endpoints]()
   - [Request Correlation]()
+- [Phase 2 – Prisma + Supabase Integration]()
+  - [Phase 2 Goals]()
+  - [Tech Stack (Phase 2)]()
+  - [Prisma Initialization]()
+  - [Database Schema]()
+  - [Migrations]()
+  - [Seeding & Safe Reset]()
+  - [Repository Migration (Engine Swap)]()
 
 ## Phase 1 – In-Memory Resource API
 
@@ -366,37 +378,6 @@ All tests run against a fresh in-memory repository instance per test to ensure i
 
 Run tests with: `npm run test`
 
-## Future Phase (Phase 2 Preview)
-
-Phase 2 will:
-
-- Replace in-memory repositories with Prisma ORM
-- Connect to Supabase Postgres
-- Add migrations and seeding
-- Add query features (include/filter/count)
-- Add CI database integration
-
-The API contract (routes + response format) will remain unchanged.
-
-- Ensured all `badRequest()` calls pass a string message (not an object).
-- Verified consistent error mapping across resources:
-  - **400** → Invalid input
-  - **401** → Authentication failure (middleware)
-  - **403** → Ownership violation
-  - **404** → Resource not found
-
-### Why This Refactor Was Important
-
-Switching to guard helpers requires a mental shift:
-
-Instead of writing: `if (condition) throw error;`
-
-The controller now reads: `ensure(conditionIsTrue, error);`
-
-This enforces a consistent “fail-fast” validation pattern and reduces the risk of inverted logic.
-
-This refactor improved readability and prepared the codebase for structured test coverage.
-
 ### Tech Stack (Phase 1)
 
 - Node.js (ES Modules)
@@ -476,6 +457,14 @@ You should see: `App listening on http://localhost:3005 `
 - Write formatting: `npm run format:write`
 - Run tests: `npm run test`
 
+### Database Scripts (Phase 2)
+
+- Generate Prisma client: `npx prisma generate`
+- Create migration (dev): `npx prisma migrate dev`
+- Apply migrations (CI/prod): `npx prisma migrate deploy`
+- Seed database: `npx prisma db seed`
+- Reset database safely: `npm run db:reset`
+
 ## Author Notes
 
 This project intentionally separates system identity (`id`) from domain identity (e.g., class numbers) to allow safe internal references and future schema evolution.
@@ -490,7 +479,7 @@ This project uses a layered structure:
 - **createApp.js** → Express app factory
 - **middleware/** → reusable middleware
 - **controllers/** → request handling logic
-- **repos/** → in-memory data layer (users + classes in Phase 1)
+- repos/ → data layer (in-memory in Phase 1, Prisma-backed in Phase 2)
 - **routes/** → route definitions
 - **utils/** → shared helpers (env, jwt, etc.)
 - **tests/** → API tests
@@ -589,4 +578,171 @@ Every request receives a unique `requestId`.
 This enables easier debugging and production log tracing.
 
 > Note: In future production versions, route details may be removed from client-facing error messages and retained only in logs.
+
+## Phase 2 – Prisma + Supabase Integration
+
+Phase 2 replaces in-memory storage with **Supabase Postgres** using **Prisma ORM v7** , while preserving the API contract from Phase 1.
+
+Routes, response envelope, authentication, and ownership rules remain unchanged.
+
+Only the persistence layer is swapped.
+
+## Phase 2 Goals
+
+* [x] Install Prisma ORM v7
+* [x] Configure `prisma.config.js` (Prisma v7 datasource requirement)
+* [x] Connect to Supabase Postgres
+* [x] Define relational schema (User → Class → Entry)
+* [x] Create and run migration
+* [x] Implement seed and safe reset scripts
+* [x] Replace in-memory repositories with Prisma-backed repositories
+* [ ] CI database integration (Postgres service container)
+* [ ] Prisma error mapping (409 handling)
+
+### Tech Stack (Updated for Phase 2)
+
+* Node.js (ES Modules)
+* Express
+* Prisma ORM v7
+* Supabase Postgres
+* jsonwebtoken
+* bcryptjs
+* Vitest
+* Supertest
+* ESLint
+* Prettier
+
+### Prisma Initialization
+
+Prisma was integrated into the existing project structure rather than bootstrapped from scratch.
+
+Instead of running `prisma init`, the required configuration and scripts were:
+
+* Added manually to the project
+* Installed via `npm install`
+* Configured using Prisma v7 conventions
+
+Dependencies:
+`npm install prisma @prisma/client`
+
+Prisma v7 uses a separate configuration file:
+
+* `prisma.config.js`
+
+The datasource connection is configured via environment variables:
+
+```
+DATABASE_URL=...
+DIRECT_URL=...
+```
+
+After configuration was complete, the Prisma client was generated:
+`npx prisma generate`
+
+This ensured the client matched the defined schema before running migrations.
+
+### Database Schema
+
+Phase 2 introduces a relational schema using Prisma.
+
+#### Models
+
+* **User**
+* **Class**
+* **Entry**
+
+#### Relationships
+
+* One User → many Classes
+* One Class → many Entries
+* Each Entry belongs to:
+  * One Class
+  * One User (author)
+
+#### ID Strategy (Phase 2)
+
+In Phase 1, IDs were generated using `crypto.randomUUID()`.
+
+In Phase 2, UUIDs are generated at the **database level** using Prisma schema definitions.
+
+This removes ID generation responsibility from the application layer while preserving opaque string identifiers.
+
+### Migrations
+
+After defining the schema, a migration was created:
+`npx prisma migrate dev --name init`
+
+This:
+
+* Generated SQL migration files
+* Applied the schema to Supabase Postgres
+* Updated the Prisma client
+
+For CI or production environments: `npx prisma migrate deploy`
+
+### Seeding & Safe Reset
+
+Phase 2 includes deterministic seed helpers:
+
+* `prisma/seedData.js`
+* `prisma/seed.js`
+* `scripts/dbReset.js`
+
+#### Seed Strategy
+
+* Deletes records in dependency order:
+  * entries → classes → users
+* Inserts predictable demo data
+* Does NOT drop the schema
+* Safe for remote Supabase development
+
+Run seed: `npx prisma db seed`
+
+Run safe reset: `npm run db:reset`
+
+The reset script clears data and reseeds without destroying migrations.
+
+### Repository Migration (Engine Swap)
+
+All repositories were migrated from:
+
+* In-memory arrays (Phase 1)
+
+to:
+
+* Prisma client queries (Phase 2)
+
+Example transformation:
+
+**Phase 1:** `classes.push(newClass);`
+
+**Phase 2:** `prisma.class.create({ data: {...} });`
+
+#### Pagination Strategy
+
+Phase 1 used manual windowing logic.
+
+Phase 2 uses Prisma query options:
+
+* `take` → limit
+* `skip` → offset
+* `orderBy` → deterministic ordering
+
+This preserves API behavior while delegating windowing to the database.
+
+#### Include Strategy
+
+`GET /classes` remains intentionally lean.
+
+It returns:
+
+* Class records
+* Pagination metadata
+
+Future roadmap enhancement:
+
+* Add `_count.entries` to list endpoint
+* Add entry inclusion on `GET /classes/:id` for full roster view
+
+These are planned extensions and do not alter the current API contract.
 

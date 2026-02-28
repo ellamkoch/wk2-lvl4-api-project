@@ -619,19 +619,19 @@ Only the persistence layer is swapped.
 Phase 2 retains the same layered structure from Phase 1, with the following additions:
 
 prisma/
-  schema.prisma
-  prisma.config.js
-  seed.js
-  seedData.js
+schema.prisma
+prisma.config.js
+seed.js
+seedData.js
 
 scripts/
-  dbReset.js
+dbReset.js
 
 docs/
-  rls-notes.md
+rls-notes.md
 
 .github/workflows/
-  ci.yml
+ci.yml
 
 The repository layer was swapped from in-memory arrays to Prisma-backed repositories without changing the controller or route structure.
 
@@ -1038,4 +1038,3 @@ This document explains:
 - why database-level authorization is defense in depth
 - how `auth.uid()` would map to `authorId` using Supabase Auth
 - an example “only owner can update” policy (pseudo-SQL)
-

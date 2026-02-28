@@ -1,9 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 
 import { createApp } from '#app';
 import { createRepos } from '#repos/index';
 import { prisma } from '#db/prisma';
+
+beforeEach(async () => {
+  await prisma.user.deleteMany();
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
+});
 
 describe('Authentication', () => {
   it('register a new user and log in successfully', async () => {

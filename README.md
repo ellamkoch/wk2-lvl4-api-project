@@ -23,8 +23,6 @@ The goal is to build a stable, production-ready API foundation before introducin
 
 ## Table of Contents
 
-## Table of Contents
-
 - [Overview]()
 - [Phase 1 – In-Memory Resource API]()
   - [Design Philosophy]()
@@ -431,7 +429,14 @@ PORT=3005
 JWT_SECRET=your-super-long-random-string-32+chars
 ```
 
-### Required Variables
+### Required Variables (Phase 1 Minimum)
+
+To run the API in **Phase 1 (in-memory mode)** , only the following are required:
+
+```
+PORT=3005
+JWT_SECRET=your-super-long-random-string-32+chars
+```
 
 - **PORT** — Port the server will run on
 - **JWT_SECRET** — Secret used to sign JWT tokens (must be 32+ characters)
@@ -440,13 +445,30 @@ Environment variables are validated at startup.
 
 If invalid, the application will fail fast and refuse to boot.
 
+### Additional Variables (Phase 2 – Database Mode)
+
+To run **Phase 2 (Prisma + Supabase)** , the following must also be configured:
+
+```
+DATABASE_URL=...
+DIRECT_URL=...
+SUPABASE_DB_PASSWORD=...
+PRISMA_SQL_SUPABASE_PASSWORD=...
+```
+
+These values are provided by Supabase.
+
 ### Running the Server
 
 Install dependencies: `npm install`
 
 Start development server: `npm run dev`
 
-You should see: `App listening on http://localhost:3005 `
+You should see: `IT'S ALIVE!!! This app listening on http://localhost:3005 `
+
+If Phase 2 environment variables are configured, the API will run using Prisma-backed repositories.
+
+If not, it can still run Phase 1 (in-memory) logic.
 
 ## Scripts
 
@@ -459,11 +481,21 @@ You should see: `App listening on http://localhost:3005 `
 
 ### Database Scripts (Phase 2)
 
+These scripts are only required when running Phase 2.
+
 - Generate Prisma client: `npx prisma generate`
 - Create migration (dev): `npx prisma migrate dev`
 - Apply migrations (CI/prod): `npx prisma migrate deploy`
 - Seed database: `npx prisma db seed`
 - Reset database safely: `npm run db:reset`
+
+This script:
+
+* Deletes records in dependency order
+* Reseeds predictable demo data
+* Preserves schema and migration history
+
+Use this before integration testing or manual Postman validation.
 
 ## Author Notes
 
@@ -520,6 +552,38 @@ This structure ensures:
 - Stable frontend integration
 - Predictable error handling
 - Easy request tracing via `requestId`
+
+#### Prisma Error Mapping (Phase 2)
+
+Phase 2 introduces database-level constraint enforcement.
+
+To preserve the API contract, the global error handler maps known Prisma errors into structured HTTP responses.
+
+Mapped Prisma error codes:
+
+* `P2002` → `409 Conflict` (unique constraint violation)
+* `P2003` → `409 Conflict` (foreign key constraint violation)
+* `P2025` → `404 Not Found` (record not found)
+
+All mapped errors are converted into the standard response envelope:
+
+```
+{
+  "ok": false,
+  "error": {
+    "code": "unique_constraint",
+    "message": "A record with these unique fields already exists.",
+    "details": null,
+    "requestId": "uuid"
+  }
+}
+```
+
+This ensures:
+
+* Database errors do not leak internal implementation details
+* Clients receive consistent HTTP semantics
+* The API contract remains stable between Phase 1 and Phase 2
 
 ### Health Check Endpoint
 
@@ -597,7 +661,7 @@ Only the persistence layer is swapped.
 * [x] Implement seed and safe reset scripts
 * [x] Replace in-memory repositories with Prisma-backed repositories
 * [ ] CI database integration (Postgres service container)
-* [ ] Prisma error mapping (409 handling)
+* [x] Prisma error mapping (409 handling)
 
 ### Tech Stack (Updated for Phase 2)
 
@@ -722,13 +786,35 @@ Example transformation:
 
 Phase 1 used manual windowing logic.
 
-Phase 2 uses Prisma query options:
+In Phase 2, pagination is delegated directly to the database via Prisma query options.
+
+The repositories use:
 
 * `take` → limit
 * `skip` → offset
 * `orderBy` → deterministic ordering
 
-This preserves API behavior while delegating windowing to the database.
+Example:
+
+```
+prisma.class.findMany({
+  take: limit,
+  skip: offset,
+  orderBy: { id: 'asc' }
+})
+```
+
+This ensures:
+
+* Deterministic ordering
+* Efficient database-level windowing
+* Identical API response structure to Phase 1
+
+The API contract remains unchanged:
+
+* Controllers still return pagination metadata
+* Response envelope remains consistent
+* Clients are unaffected by the persistence swap
 
 #### Include Strategy
 
@@ -832,4 +918,34 @@ This ensures:
 * Connection reuse
 * Predictable lifecycle management
 * Clean separation of infrastructure and business logic
+
+#### Removal of Phase 1 Windowing Helpers
+
+Phase 1 used an internal helper (`applyWindow`) to manually slice in-memory arrays for pagination.
+
+In Phase 2, pagination is delegated directly to Prisma using:
+
+* `take`
+* `skip`
+* `orderBy`
+
+Because the database now handles windowing, the `applyWindow` helper was removed.
+
+This simplifies the repository layer and eliminates redundant in-memory slicing logic.
+
+### Controller Async Alignment (Phase 2 Adjustment)
+
+In Phase 1, repositories were synchronous (in-memory arrays).
+
+After migrating to Prisma in Phase 2, all repository methods became asynchronous.
+
+To preserve the API contract:
+
+* All controller handlers were converted to `async`
+* All repository calls were updated to use `await`
+* No route signatures or response shapes were modified
+
+This confirms that the controller layer remains storage-agnostic.
+
+The HTTP contract did not change — only the persistence engine did.
 

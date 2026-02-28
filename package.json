@@ -42,7 +42,8 @@
     "#controllers/*": "./src/controllers/*.js",
     "#middleware/*": "./src/middleware/*.js",
     "#repos/*": "./src/repos/*.js",
-    "#utils/*": "./src/utils/*.js"
+    "#utils/*": "./src/utils/*.js",
+    "#db/*": "./src/db/*.js"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.4.1",
@@ -58,7 +59,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.3",
-   "eslint": "^10.0.2",
+    "eslint": "^10.0.2",
     "eslint-config-prettier": "^6.15.0",
     "globals": "^17.3.0",
     "prettier": "^3.8.1",

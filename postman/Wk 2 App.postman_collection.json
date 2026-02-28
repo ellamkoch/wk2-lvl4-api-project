@@ -1,0 +1,503 @@
+{
+  "info": {
+    "_postman_id": "c61f5e9f-08f8-45fe-aea5-1e35a397ec8b",
+    "name": "Wk 2 App",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49241835",
+    "_collection_link": "https://go.postman.co/collection/49241835-c61f5e9f-08f8-45fe-aea5-1e35a397ec8b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Register",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.test('Envelope has token', function () { pm.expect(json.data).to.have.property('token'); });",
+              "pm.collectionVariables.set('token', json.data.token);",
+              "pm.collectionVariables.set('userId', String(json.data.user.id));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"user3@example.com\",\n    \"password\": \"Passw0rd!Passw0rd!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('token', json.data.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"Passw0rd!Passw0rd!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Classes - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('postId', String(json.data.id));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"className\": \"Eq\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/classes",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Class - Get by id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/classes/{{classId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes",
+            "{{classId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Classes - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Request-Id",
+            "value": "A9-posts-list-001",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/classes?limit=20&offset=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Classes - Update (owner)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "A9-{{$timestamp}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"className\": \"edited class\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/classes/{{classId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes",
+            "{{classId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Classes - Delete (owner)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/classes/{{classId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes",
+            "{{classId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Entries - Create (nested)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set('commentId', String(json.data.id));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "X-Request-Id",
+            "value": "A9-{{$timestamp}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"horseName\": \"Horse 3\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/classes/{{classId}}/entries",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes",
+            "{{classId}}",
+            "entries"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Entries - List (nested)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/classes/{{classId}}/entries?limit=20&offset=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "classes",
+            "{{classId}}",
+            "entries"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Entries - Update (owner)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"horseName\": \"Edited horse\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/entries/{{entryId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entries",
+            "{{entryId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Entries - Delete (owner)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/entries/{{entryId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "entries",
+            "{{entryId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3005"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "classId",
+      "value": ""
+    },
+    {
+      "key": "entryId",
+      "value": ""
+    },
+    {
+      "key": "postId",
+      "value": ""
+    },
+    {
+      "key": "commentId",
+      "value": ""
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import request from 'supertest';
 
 import { createApp } from '#app';
 import { createRepos } from '#repos/index';
+import { prisma } from '#db/prisma';
 
 async function registerAndGetToken(app) {
   const res = await request(app)
@@ -21,7 +22,7 @@ async function registerAndGetToken(app) {
 describe('entries (nested)', () => {
   it('create an entry and lists entries for a class, returns 200', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -48,9 +49,10 @@ describe('entries (nested)', () => {
 
     expect(list.body.data).toHaveLength(1);
   });
+
   it('update an entry with auth, return 200', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -83,7 +85,7 @@ describe('entries (nested)', () => {
 
   it('delete an entry with auth, return a 204', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -114,7 +116,7 @@ describe('entries (nested)', () => {
 
   it('update an entry with auth, but field left blank, returns 400', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -145,9 +147,10 @@ describe('entries (nested)', () => {
 
     expect(updated.body.error.code).toBe('bad_request');
   });
+
   it('update an entry with auth, but returns a 404', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -176,9 +179,10 @@ describe('entries (nested)', () => {
 
     expect(updated.body.error.code).toBe('not_found');
   });
+
   it('wrong owner cannot update, returns 403', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },

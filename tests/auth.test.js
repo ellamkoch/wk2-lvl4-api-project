@@ -3,17 +3,18 @@ import request from 'supertest';
 
 import { createApp } from '#app';
 import { createRepos } from '#repos/index';
+import { prisma } from '#db/prisma';
 
 describe('Authentication', () => {
   it('register a new user and log in successfully', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
     });
 
-    const email = `user1@email.com`;
+    const email = `bob+${Date.now()}@example.com`;
 
     const registerRes = await request(app).post('/auth/register').send({
       email,

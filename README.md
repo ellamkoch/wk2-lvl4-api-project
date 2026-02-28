@@ -1,8 +1,48 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [wk2-lvl4-api-project](#wk2-lvl4-api-project)
+  - [Phase 1 – In-Memory Resource API](#phase-1--in-memory-resource-api)
+    - [Design Philosophy](#design-philosophy)
+    - [Phase 1 Goals](#phase-1-goals)
+    - [ID Strategy (Phase 1 Requirement)](#id-strategy-phase-1-requirement)
+    - [Authentication (Phase 1)](#authentication-phase-1)
+    - [Entries Resource (Phase 1)](#entries-resource-phase-1)
+    - [Cascade Behavior](#cascade-behavior)
+    - [Guard Pattern Consistency Pass (Pre-Testing Refactor)](#guard-pattern-consistency-pass-pre-testing-refactor)
+    - [Test Coverage (Phase 1)](#test-coverage-phase-1)
+    - [Tech Stack (Phase 1)](#tech-stack-phase-1)
+    - [Project Structure](#project-structure)
+  - [How to Run/Install](#how-to-runinstall)
+    - [Environment Setup](#environment-setup)
+    - [Required Variables (Phase 1 Minimum)](#required-variables-phase-1-minimum)
+    - [Additional Variables (Phase 2 – Database Mode)](#additional-variables-phase-2--database-mode)
+    - [Running the Server](#running-the-server)
+  - [Scripts](#scripts)
+    - [Database Scripts (Phase 2)](#database-scripts-phase-2)
+  - [Author Notes](#author-notes)
+    - [Architecture](#architecture)
+    - [Response & Error Envelope](#response--error-envelope)
+    - [Health Check Endpoint](#health-check-endpoint)
+    - [Authentication Endpoints](#authentication-endpoints)
+    - [Request Correlation](#request-correlation)
+  - [Phase 2 – Prisma + Supabase Integration](#phase-2--prisma--supabase-integration)
+    - [Phase 2 Goals](#phase-2-goals)
+    - [Tech Stack (Updated for Phase 2)](#tech-stack-updated-for-phase-2)
+    - [Prisma Initialization](#prisma-initialization)
+    - [Database Schema](#database-schema)
+    - [Migrations](#migrations)
+    - [Seeding & Safe Reset](#seeding--safe-reset)
+    - [Repository Migration (Engine Swap)](#repository-migration-engine-swap)
+    - [Repository Completion (Users + Entries)](#repository-completion-users--entries)
+    - [Controller Async Alignment (Phase 2 Adjustment)](#controller-async-alignment-phase-2-adjustment)
+    - [Testing Strategy](#testing-strategy)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # wk2-lvl4-api-project
 
 This is a repo Phases 1 and 2 for my Level 4, Week 2 API project with CodeX.
-
-## Overview
 
 This project is part of a two-phase assignment:
 
@@ -21,38 +61,6 @@ Phase 1 focuses on:
 
 The goal is to build a stable, production-ready API foundation before introducing persistence.
 
-## Table of Contents
-
-- [Overview]()
-- [Phase 1 – In-Memory Resource API]()
-  - [Design Philosophy]()
-  - [Phase 1 Goals]()
-  - [ID Strategy (Phase 1 Requirement)]()
-  - [Authentication (Phase 1)]()
-  - [Classes Resource (Phase 1)]()
-  - [Entries Resource (Phase 1)]()
-  - [Cascade Behavior]()
-  - [Guard Pattern Consistency Pass]()
-  - [Test Coverage (Phase 1)]()
-- [How to Run/Install]()
-  - [Environment Setup]()
-  - [Running the Server]()
-- [Scripts]()
-- [Author Notes]()
-  - [Architecture]()
-  - [Response & Error Envelope]()
-  - [Health Check Endpoint]()
-  - [Authentication Endpoints]()
-  - [Request Correlation]()
-- [Phase 2 – Prisma + Supabase Integration]()
-  - [Phase 2 Goals]()
-  - [Tech Stack (Phase 2)]()
-  - [Prisma Initialization]()
-  - [Database Schema]()
-  - [Migrations]()
-  - [Seeding & Safe Reset]()
-  - [Repository Migration (Engine Swap)]()
-
 ## Phase 1 – In-Memory Resource API
 
 A structured Express API built for CodeX Level 4 Week 2.
@@ -63,29 +71,29 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 
 ### Design Philosophy
 
-- Fail fast on invalid configuration
-- Keep startup logic separate from app construction
-- Maintain consistent response shape
-- Enforce ownership at the application layer
-- Prepare for database integration without refactoring the API contract
+* Fail fast on invalid configuration
+* Keep startup logic separate from app construction
+* Maintain consistent response shape
+* Enforce ownership at the application layer
+* Prepare for database integration without refactoring the API contract
 
 ### Phase 1 Goals
 
-- [x] Bootable Express server
-- [x] Environment validation
-- [x] Security middleware
-- [x] Logging middleware
-- [x] Global response helper
-- [x] Global error handler
-- [x] JWT auth routes
-- [x] Primary resource (classes)
-- [x] Related resource (entries)
-- [x] Nested routes (one-to-many)
-- [x] Cascade delete (class → entries)
-- [x] Ownership enforcement
-- [x] Guard pattern consistency pass (ensure refactor)
-- [x] Tests (happy path + error path)
-- [x] UID-based system IDS using crypto.randomUUID()
+* [x] Bootable Express server
+* [x] Environment validation
+* [x] Security middleware
+* [x] Logging middleware
+* [x] Global response helper
+* [x] Global error handler
+* [x] JWT auth routes
+* [x] Primary resource (classes)
+* [x] Related resource (entries)
+* [x] Nested routes (one-to-many)
+* [x] Cascade delete (class → entries)
+* [x] Ownership enforcement
+* [x] Guard pattern consistency pass (ensure refactor)
+* [x] Tests (happy path + error path)
+* [x] UID-based system IDS using crypto.randomUUID()
 
 ### ID Strategy (Phase 1 Requirement)
 
@@ -113,9 +121,13 @@ Authorization: Bearer <token>
 
 JWT payload includes:
 
+```
 {
+
 "sub": "<userId>"
+
 }
+```
 
 The `sub` claim is used to enforce ownership of resources at the application layer.
 
@@ -140,20 +152,20 @@ Example response:
 
 ```
 {
-  "ok": true,
-  "requestId": "uuid",
-  "data": [
-    { "id": **"550e8400-e29b-41d4-a716-446655440000"**,
-  "className": **"Hunter Under Saddle"**,
-  "authorId": **"user-uuid"** }
-  ],
-  "meta": {
-    "pagination": {
-      "limit": 20,
-      "page": 1,
-      "total": 1
-    }
-  }
+     "ok": true,
+     "requestId": "uuid",
+     "data": [
+         { "id": **"550e8400-e29b-41d4-a716-446655440000"**,
+           "className": **"Hunter Under Saddle"**,
+           "authorId": **"user-uuid"** }
+              ],
+     "meta": {
+     "pagination": {
+          "limit": 20,
+          "page": 1,
+          "total": 1
+      }
+   }
 }
 ```
 
@@ -165,45 +177,13 @@ Returns 404 if not found.
 
 #### Protected Endpoints (JWT Required)
 
-Authorization header required:
-`Authorization: Bearer <token>`
-
 ##### POST `/classes`
-
-Creates a new class owned by the authenticated user.
-
-Request body:
-
-```
-{
-  "className": "Hunter Under Saddle"
-}
-```
-
-Returns 201 Created.
 
 ##### PUT `/classes/:id`
 
-Updates a class if owned by the authenticated user.
-
-Returns:
-
-- 200 on success
-- 404 if not found
-- 403 if not owner
-- 400 if no updatable fields provided
-
 ##### DELETE `/classes/:id`
 
-Deletes a class if owned by the authenticated user.
-
-Returns:
-
-- 204 No Content
-- 404 if not found
-- 403 if not owner
-
-##### Ownership Model
+#### Ownership Model
 
 Classes are globally visible.
 
@@ -214,7 +194,7 @@ Ownership is enforced only for:
 
 Ownership is determined via the `sub` claim in the JWT payload (`req.user.id`).
 
-#### Entries Resource (Phase 1)
+### Entries Resource (Phase 1)
 
 The `entries` resource represents a horse’s enrollment in a specific class.
 
@@ -234,7 +214,7 @@ Entries form a **one-to-many relationship** :
 - One class → many entries
 - Each entry belongs to exactly one class
 
-##### Route Design
+#### Route Design
 
 Phase 1 uses a hybrid route structure:
 
@@ -253,66 +233,19 @@ This design keeps:
 - Listing/creation logically grouped under the parent class
 - Update/delete operations simple and resource-oriented
 
-##### Public Endpoint
+#### Public Endpoints
 
-###### GET `/classes/:classId/entries`
+##### GET `/classes/:classId/entries`
 
-Returns a paginated list of entries for a specific class.
-
-Query parameters (optional):
-
-- `limit`
-- `page`
-
-Returns:
-
-- 200 with paginated entries
-- 404 if class does not exist
-
-##### Protected Endpoints (JWT Required)
-
-Authorization header required: `Authorization: Bearer <token>`
+#### Protected Endpoints (JWT Required)
 
 ##### POST `/classes/:classId/entries`
 
-Creates a new entry under a specific class.
-
-Request body:
-
-```
-{
-  "horseName": "Rocket"
-}
-```
-
-Returns:
-
-- 201 Created
-- 404 if class does not exist
-
 ##### PUT `/entries/:entryId`
-
-Updates an entry if owned by the authenticated user.
-
-Returns:
-
-- 200 on success
-- 404 if entry not found
-- 404 if parent class no longer exists
-- 403 if not owner
 
 ##### DELETE `/entries/:entryId`
 
-Deletes an entry if owned by the authenticated user.
-
-Returns:
-
-- 204 No Content
-- 404 if entry not found
-- 404 if parent class no longer exists
-- 403 if not owner
-
-#### Cascade Behavior
+### Cascade Behavior
 
 When a class is deleted:
 
@@ -321,7 +254,7 @@ When a class is deleted:
 
 Cascade is handled at the application layer and will later transition to database-level cascading in Phase 2.
 
-#### Guard Pattern Consistency Pass (Pre-Testing Refactor)
+### Guard Pattern Consistency Pass (Pre-Testing Refactor)
 
 Before implementing tests, I performed a validation and guard consistency pass across the `classes` and `entries` controllers.
 
@@ -332,22 +265,24 @@ Before implementing tests, I performed a validation and guard consistency pass a
 - Fixed an inverted guard condition in `updateClass`:
   - Corrected to:`ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));`
 
-## Test Coverage (Phase 1)
+### Test Coverage (Phase 1)
 
 Phase 1 includes integration-level API tests using **Vitest** and **Supertest** .
 
 Test coverage satisfies the rubric minimum:
 2 happy paths, 2 error paths (validation + not found), and 1 authentication rejection test.
 
+Run tests with: `npm run test`
+
 Tests cover:
 
-### Authentication
+#### Authentication
 
 - Register user (201)
 - Login user (200)
 - JWT token returned on success
 
-### Classes Resource
+#### Classes Resource
 
 - 401 when creating without auth
 - 201 create class
@@ -357,7 +292,9 @@ Tests cover:
 - 404 delete not found
 - 400 update with empty body
 
-### Entries Resource
+#### Entries Resource
+
+All tests run against a fresh in-memory repository instance per test to ensure isolation
 
 Nested routes:
 
@@ -374,8 +311,6 @@ Flat routes:
 
 All tests run against a fresh in-memory repository instance per test to ensure isolation.
 
-Run tests with: `npm run test`
-
 ### Tech Stack (Phase 1)
 
 - Node.js (ES Modules)
@@ -389,7 +324,7 @@ Run tests with: `npm run test`
 - Supertest
 - ESLint
 - Prettier
-  Vitest + Supertest (integration-level API testing)
+- Vitest + Supertest (integration-level API testing)
 
 ### Project Structure
 
@@ -405,7 +340,7 @@ src/
   utils/
 tests/
 .github/workflows/
-tests/ → Integration tests (auth, classes, entries)
+tests/ → Integration tests (health, auth, classes, entries)
 ```
 
 The project uses Node’s `"imports"` alias mapping to avoid long relative paths.
@@ -651,7 +586,7 @@ Routes, response envelope, authentication, and ownership rules remain unchanged.
 
 Only the persistence layer is swapped.
 
-## Phase 2 Goals
+### Phase 2 Goals
 
 * [x] Install Prisma ORM v7
 * [x] Configure `prisma.config.js` (Prisma v7 datasource requirement)
@@ -662,6 +597,7 @@ Only the persistence layer is swapped.
 * [x] Replace in-memory repositories with Prisma-backed repositories
 * [ ] CI database integration (Postgres service container)
 * [x] Prisma error mapping (409 handling)
+* [x] Updated test files and run them successfully
 
 ### Tech Stack (Updated for Phase 2)
 
@@ -948,4 +884,101 @@ To preserve the API contract:
 This confirms that the controller layer remains storage-agnostic.
 
 The HTTP contract did not change — only the persistence engine did.
+
+### Testing Strategy
+
+Phase 2 transitions testing from an in-memory data layer to a real Postgres-backed environment using Prisma.
+
+The API contract remains unchanged.
+
+However, the persistence model introduces important testing adjustments.
+
+#### What Changed from Phase 1
+
+In Phase 1:
+
+* Repositories were synchronous
+* Each test ran against a fresh in-memory instance
+* IDs were generated using `crypto.randomUUID()`
+
+In Phase 2:
+
+* Repositories are asynchronous
+* IDs are generated at the database level (UUID)
+* Tests interact with a real Postgres database
+
+The test suite was updated to account for these changes without modifying the API surface.
+
+#### Test Isolation Strategy
+
+Tests now:
+
+* Instantiate a new Express app per test
+* Inject Prisma-backed repositories
+* Create unique users using timestamp-based emails
+* Avoid assumptions about database emptiness
+* Avoid hard-coded IDs
+
+Example unique email pattern used in tests:
+`const email = `bob+${Date.now()}@example.com`;`
+
+This prevents unique constraint conflicts (`P2002` or `409`) during repeated test runs.
+
+Tests pass consistently when executed multiple times in succession.
+
+#### Error Mapping Validation
+
+Phase 2 tests implicitly validate Prisma error mapping.
+
+For example:
+
+* Unique constraint violations return `409`
+* Missing records return `404`
+* Foreign key violations return `409`
+* Ownership violations return `403`
+
+All responses continue to use the standardized response envelope.
+
+This confirms:
+
+* Database-level constraints are active
+* The global error handler properly maps Prisma error codes
+* The API contract remains stable
+
+#### Pagination Validation
+
+Pagination tests validate:
+
+* `limit`
+* `page`
+* `total`
+
+Rather than asserting exact totals, tests use:`toBeGreaterThanOrEqual(...)`
+
+This prevents failures when persistent test data accumulates.
+
+Pagination behavior is delegated to Prisma using:
+
+* `take`
+* `skip`
+* `orderBy`
+
+The API response format remains identical to Phase 1.
+
+#### Test Execution
+
+Run all tests: `npm run test`
+
+Phase 2 tests run against the configured Postgres database.
+
+If needed, reset the database safely using: `npm run db:reset`
+
+This clears data and reseeds predictable demo records without dropping migrations.
+
+This confirms that:
+
+* The engine swap did not break the API contract
+* Persistence moved to Postgres
+* Prisma integration is stable
+* The system behaves consistently under repeated test execution
 

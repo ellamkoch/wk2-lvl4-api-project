@@ -3,6 +3,7 @@ import request from 'supertest';
 
 import { createApp } from '#app';
 import { createRepos } from '#repos/index';
+import { prisma } from '#db/prisma';
 
 async function registerAndGetToken(app) {
   const res = await request(app)
@@ -21,7 +22,7 @@ async function registerAndGetToken(app) {
 describe('Classes', () => {
   it('create class requires auth', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -32,7 +33,7 @@ describe('Classes', () => {
 
   it('creates and lists classes with pagination meta', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -67,7 +68,7 @@ describe('Classes', () => {
 
   it('wrong owner cannot update, returns 403', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -94,7 +95,7 @@ describe('Classes', () => {
 
   it('owner can delete a class with success, returns 204', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -117,7 +118,7 @@ describe('Classes', () => {
 
   it('returns a 404 when a user tries to delete a class not found', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },
@@ -133,7 +134,7 @@ describe('Classes', () => {
   });
   it('returns a 400 when a user updates a class but does not fill out the field', async () => {
     const app = createApp({
-      repos: await createRepos(),
+      repos: await createRepos(prisma),
       config: {
         JWT_SECRET: 'test-secret',
       },

@@ -1,5 +1,5 @@
 /**
- * Auth Controller
+ * Auth Controller (Phase 2 - Prisma Backed)
  *
  * Responsibilities:
  * - Handle user registration and login
@@ -8,12 +8,12 @@
  * - Issue JWT tokens on successful authentication
  * - Return standardized response envelopes
  *
+ * Dependencies:
+ * - Relies on Prisma-backed `users` repository for persistence
+ *
  * This controller does NOT:
- * - Persist to a database (Phase 1 uses in-memory storage)
  * - Handle role-based access
  * - Implement refresh tokens
- *
- * Phase: 1 (In-Memory)
  */
 
 import { conflict, unauthorized } from '#utils/httpErrors';

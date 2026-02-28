@@ -1,17 +1,16 @@
 /**
- * Classes Controller (Phase 1 - In-Memory)
+ * Classes Controller (Phase 2 - Prisma Backed)
  *
  * HTTP handler functions for the /classes routes.
  *
  * Controllers:
  *  - Read input from the request (params, query, body)
  *  - Use guards (ensure/ensureFields) to fail fast on invalid input
- *  - Call the repository to perform data operations
+ *  - Call the repository to perform data operations (Prisma-backed)
  *  - Send final HTTP responses (status + JSON) using res.ok/res.created/res.noContent
  *
  * Controllers do NOT:
  *  - Store data directly (repo owns storage)
- *  - Know how data will be persisted long-term (Phase 2 later)
  *
  * Auth note:
  *  - Public routes: listAllClasses, getClassById
@@ -32,7 +31,6 @@
 import { notFound, forbidden, badRequest } from '#utils/httpErrors';
 import { ensure, ensureFields } from '#utils/ensureFieldsGuard';
 import { parsePagination } from '#utils/pagination';
-// import { parseCsvSet } from "#utils/queryParams"; //may need this later
 
 /**
  * GET /classes (PUBLIC)
@@ -151,7 +149,7 @@ export async function updateClass(req, res) {
   const updatedClass = await classes.update({
     id,
     className: updates.className,
-    authorId: req.user.id
+    authorId: req.user.id,
   });
 
   if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');

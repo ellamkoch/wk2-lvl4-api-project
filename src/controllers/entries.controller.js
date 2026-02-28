@@ -1,16 +1,15 @@
 /**
- * Entries Controller (Phase 1 - In-Memory)
+ * Entries Controller (Phase 2 - Prisma Backed)
  *
  * This file contains HTTP-focused handler functions for the entries routes.
  *
  * Controllers:
  *  - Read input from the request (params, query, body)
- *  - Call the repository to perform data operations
+ *  - Call the repository to perform data operations (Prisma-backed)
  *  - Send final HTTP responses (status + JSON) using res.ok/res.created/res.noContent
  *
  * Controllers do NOT:
  *  - Store data directly (repo owns storage)
- *  - Know how data will be persisted long-term (Phase 2 later)
  *
  * Auth note:
  *  - Public routes: listEntriesForClass
@@ -161,7 +160,7 @@ export async function deleteEntry(req, res) {
   const id = req.params.entryId;
 
   const entry = await entries.getById(id);
- ensure(entry, notFound('Entry not found'));
+  ensure(entry, notFound('Entry not found'));
 
   const parentClass = await classes.getById(entry.classId);
   ensure(parentClass, notFound('Class not found'));

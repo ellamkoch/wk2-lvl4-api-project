@@ -5,6 +5,10 @@ import prettier from 'eslint-config-prettier';
 
 export default defineConfig([
   {
+    ignores: ['generated/**', 'node_modules/**', 'coverage/**', '.data/**'],
+  },
+
+  {
     files: ['**/*.js'],
     extends: [js.configs.recommended],
     languageOptions: {

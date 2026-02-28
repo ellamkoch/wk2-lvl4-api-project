@@ -71,29 +71,29 @@ Future phases will replace in-memory storage with Supabase Postgres + Prisma ORM
 
 ### Design Philosophy
 
-* Fail fast on invalid configuration
-* Keep startup logic separate from app construction
-* Maintain consistent response shape
-* Enforce ownership at the application layer
-* Prepare for database integration without refactoring the API contract
+- Fail fast on invalid configuration
+- Keep startup logic separate from app construction
+- Maintain consistent response shape
+- Enforce ownership at the application layer
+- Prepare for database integration without refactoring the API contract
 
 ### Phase 1 Goals
 
-* [x] Bootable Express server
-* [x] Environment validation
-* [x] Security middleware
-* [x] Logging middleware
-* [x] Global response helper
-* [x] Global error handler
-* [x] JWT auth routes
-* [x] Primary resource (classes)
-* [x] Related resource (entries)
-* [x] Nested routes (one-to-many)
-* [x] Cascade delete (class → entries)
-* [x] Ownership enforcement
-* [x] Guard pattern consistency pass (ensure refactor)
-* [x] Tests (happy path + error path)
-* [x] UID-based system IDS using crypto.randomUUID()
+- [x] Bootable Express server
+- [x] Environment validation
+- [x] Security middleware
+- [x] Logging middleware
+- [x] Global response helper
+- [x] Global error handler
+- [x] JWT auth routes
+- [x] Primary resource (classes)
+- [x] Related resource (entries)
+- [x] Nested routes (one-to-many)
+- [x] Cascade delete (class → entries)
+- [x] Ownership enforcement
+- [x] Guard pattern consistency pass (ensure refactor)
+- [x] Tests (happy path + error path)
+- [x] UID-based system IDS using crypto.randomUUID()
 
 ### ID Strategy (Phase 1 Requirement)
 
@@ -103,9 +103,9 @@ IDs are treated as opaque strings and are never parsed or coerced to numbers.
 
 This ensures:
 
-* Rubric compliance (Phase 1 requirement)
-* Stable identity before database integration
-* Easier to update for Phase 2 requirements
+- Rubric compliance (Phase 1 requirement)
+- Stable identity before database integration
+- Easier to update for Phase 2 requirements
 
 ### Authentication (Phase 1)
 
@@ -145,8 +145,8 @@ Returns a paginated list of all classes.
 
 Query parameters (optional):
 
-* limit
-* page (internally converted to offset)
+- limit
+- page (internally converted to offset)
 
 Example response:
 
@@ -426,9 +426,9 @@ These scripts are only required when running Phase 2.
 
 This script:
 
-* Deletes records in dependency order
-* Reseeds predictable demo data
-* Preserves schema and migration history
+- Deletes records in dependency order
+- Reseeds predictable demo data
+- Preserves schema and migration history
 
 Use this before integration testing or manual Postman validation.
 
@@ -496,9 +496,9 @@ To preserve the API contract, the global error handler maps known Prisma errors 
 
 Mapped Prisma error codes:
 
-* `P2002` → `409 Conflict` (unique constraint violation)
-* `P2003` → `409 Conflict` (foreign key constraint violation)
-* `P2025` → `404 Not Found` (record not found)
+- `P2002` → `409 Conflict` (unique constraint violation)
+- `P2003` → `409 Conflict` (foreign key constraint violation)
+- `P2025` → `404 Not Found` (record not found)
 
 All mapped errors are converted into the standard response envelope:
 
@@ -516,9 +516,9 @@ All mapped errors are converted into the standard response envelope:
 
 This ensures:
 
-* Database errors do not leak internal implementation details
-* Clients receive consistent HTTP semantics
-* The API contract remains stable between Phase 1 and Phase 2
+- Database errors do not leak internal implementation details
+- Clients receive consistent HTTP semantics
+- The API contract remains stable between Phase 1 and Phase 2
 
 ### Health Check Endpoint
 
@@ -588,29 +588,29 @@ Only the persistence layer is swapped.
 
 ### Phase 2 Goals
 
-* [x] Install Prisma ORM v7
-* [x] Configure `prisma.config.js` (Prisma v7 datasource requirement)
-* [x] Connect to Supabase Postgres
-* [x] Define relational schema (User → Class → Entry)
-* [x] Create and run migration
-* [x] Implement seed and safe reset scripts
-* [x] Replace in-memory repositories with Prisma-backed repositories
-* [ ] CI database integration (Postgres service container)
-* [x] Prisma error mapping (409 handling)
-* [x] Updated test files and run them successfully
+- [x] Install Prisma ORM v7
+- [x] Configure `prisma.config.js` (Prisma v7 datasource requirement)
+- [x] Connect to Supabase Postgres
+- [x] Define relational schema (User → Class → Entry)
+- [x] Create and run migration
+- [x] Implement seed and safe reset scripts
+- [x] Replace in-memory repositories with Prisma-backed repositories
+- [ ] CI database integration (Postgres service container)
+- [x] Prisma error mapping (409 handling)
+- [x] Updated test files and run them successfully
 
 ### Tech Stack (Updated for Phase 2)
 
-* Node.js (ES Modules)
-* Express
-* Prisma ORM v7
-* Supabase Postgres
-* jsonwebtoken
-* bcryptjs
-* Vitest
-* Supertest
-* ESLint
-* Prettier
+- Node.js (ES Modules)
+- Express
+- Prisma ORM v7
+- Supabase Postgres
+- jsonwebtoken
+- bcryptjs
+- Vitest
+- Supertest
+- ESLint
+- Prettier
 
 ### Prisma Initialization
 
@@ -618,16 +618,16 @@ Prisma was integrated into the existing project structure rather than bootstrapp
 
 Instead of running `prisma init`, the required configuration and scripts were:
 
-* Added manually to the project
-* Installed via `npm install`
-* Configured using Prisma v7 conventions
+- Added manually to the project
+- Installed via `npm install`
+- Configured using Prisma v7 conventions
 
 Dependencies:
 `npm install prisma @prisma/client`
 
 Prisma v7 uses a separate configuration file:
 
-* `prisma.config.js`
+- `prisma.config.js`
 
 The datasource connection is configured via environment variables:
 
@@ -647,17 +647,17 @@ Phase 2 introduces a relational schema using Prisma.
 
 #### Models
 
-* **User**
-* **Class**
-* **Entry**
+- **User**
+- **Class**
+- **Entry**
 
 #### Relationships
 
-* One User → many Classes
-* One Class → many Entries
-* Each Entry belongs to:
-  * One Class
-  * One User (author)
+- One User → many Classes
+- One Class → many Entries
+- Each Entry belongs to:
+  - One Class
+  - One User (author)
 
 #### ID Strategy (Phase 2)
 
@@ -674,9 +674,9 @@ After defining the schema, a migration was created:
 
 This:
 
-* Generated SQL migration files
-* Applied the schema to Supabase Postgres
-* Updated the Prisma client
+- Generated SQL migration files
+- Applied the schema to Supabase Postgres
+- Updated the Prisma client
 
 For CI or production environments: `npx prisma migrate deploy`
 
@@ -684,17 +684,17 @@ For CI or production environments: `npx prisma migrate deploy`
 
 Phase 2 includes deterministic seed helpers:
 
-* `prisma/seedData.js`
-* `prisma/seed.js`
-* `scripts/dbReset.js`
+- `prisma/seedData.js`
+- `prisma/seed.js`
+- `scripts/dbReset.js`
 
 #### Seed Strategy
 
-* Deletes records in dependency order:
-  * entries → classes → users
-* Inserts predictable demo data
-* Does NOT drop the schema
-* Safe for remote Supabase development
+- Deletes records in dependency order:
+  - entries → classes → users
+- Inserts predictable demo data
+- Does NOT drop the schema
+- Safe for remote Supabase development
 
 Run seed: `npx prisma db seed`
 
@@ -706,11 +706,11 @@ The reset script clears data and reseeds without destroying migrations.
 
 All repositories were migrated from:
 
-* In-memory arrays (Phase 1)
+- In-memory arrays (Phase 1)
 
 to:
 
-* Prisma client queries (Phase 2)
+- Prisma client queries (Phase 2)
 
 Example transformation:
 
@@ -726,9 +726,9 @@ In Phase 2, pagination is delegated directly to the database via Prisma query op
 
 The repositories use:
 
-* `take` → limit
-* `skip` → offset
-* `orderBy` → deterministic ordering
+- `take` → limit
+- `skip` → offset
+- `orderBy` → deterministic ordering
 
 Example:
 
@@ -742,15 +742,15 @@ prisma.class.findMany({
 
 This ensures:
 
-* Deterministic ordering
-* Efficient database-level windowing
-* Identical API response structure to Phase 1
+- Deterministic ordering
+- Efficient database-level windowing
+- Identical API response structure to Phase 1
 
 The API contract remains unchanged:
 
-* Controllers still return pagination metadata
-* Response envelope remains consistent
-* Clients are unaffected by the persistence swap
+- Controllers still return pagination metadata
+- Response envelope remains consistent
+- Clients are unaffected by the persistence swap
 
 #### Include Strategy
 
@@ -758,13 +758,13 @@ The API contract remains unchanged:
 
 It returns:
 
-* Class records
-* Pagination metadata
+- Class records
+- Pagination metadata
 
 Future roadmap enhancement:
 
-* Add `_count.entries` to list endpoint
-* Add entry inclusion on `GET /classes/:id` for full roster view
+- Add `_count.entries` to list endpoint
+- Add entry inclusion on `GET /classes/:id` for full roster view
 
 These are planned extensions and do not alter the current API contract.
 
@@ -778,20 +778,20 @@ The in-memory `users` repository was replaced with a Prisma-backed implementatio
 
 The repository now uses:
 
-* `prisma.user.create`
-* `prisma.user.findUnique`
+- `prisma.user.create`
+- `prisma.user.findUnique`
 
 Methods implemented:
 
-* `create`
-* `findByEmail`
-* `findById`
+- `create`
+- `findByEmail`
+- `findById`
 
 Authentication flow remains unchanged:
 
-* Password hashing still occurs in the password utility.
-* JWT logic remains in middleware.
-* Controllers were not rewritten.
+- Password hashing still occurs in the password utility.
+- JWT logic remains in middleware.
+- Controllers were not rewritten.
 
 Return contracts remain consistent with Phase 1 expectations.
 
@@ -801,22 +801,22 @@ The in-memory `entries` repository was replaced with Prisma queries.
 
 Implemented methods:
 
-* `listByClassId`
-* `getById`
-* `create`
-* `update`
-* `delete`
-* `findByIdForAuthor`
+- `listByClassId`
+- `getById`
+- `create`
+- `update`
+- `delete`
+- `findByIdForAuthor`
 
 Ownership enforcement remains inside the repository layer:
 
-* `null` → not found
-* `'forbidden'` → wrong owner
+- `null` → not found
+- `'forbidden'` → wrong owner
 
 Pagination now uses Prisma windowing:
 
-* `take`
-* `skip`
+- `take`
+- `skip`
 
 Deterministic ordering is enforced using:`orderBy: { id: 'asc' }`
 
@@ -851,9 +851,9 @@ No repository or controller instantiates Prisma directly.
 
 This ensures:
 
-* Connection reuse
-* Predictable lifecycle management
-* Clean separation of infrastructure and business logic
+- Connection reuse
+- Predictable lifecycle management
+- Clean separation of infrastructure and business logic
 
 #### Removal of Phase 1 Windowing Helpers
 
@@ -861,9 +861,9 @@ Phase 1 used an internal helper (`applyWindow`) to manually slice in-memory arra
 
 In Phase 2, pagination is delegated directly to Prisma using:
 
-* `take`
-* `skip`
-* `orderBy`
+- `take`
+- `skip`
+- `orderBy`
 
 Because the database now handles windowing, the `applyWindow` helper was removed.
 
@@ -877,9 +877,9 @@ After migrating to Prisma in Phase 2, all repository methods became asynchronous
 
 To preserve the API contract:
 
-* All controller handlers were converted to `async`
-* All repository calls were updated to use `await`
-* No route signatures or response shapes were modified
+- All controller handlers were converted to `async`
+- All repository calls were updated to use `await`
+- No route signatures or response shapes were modified
 
 This confirms that the controller layer remains storage-agnostic.
 
@@ -897,15 +897,15 @@ However, the persistence model introduces important testing adjustments.
 
 In Phase 1:
 
-* Repositories were synchronous
-* Each test ran against a fresh in-memory instance
-* IDs were generated using `crypto.randomUUID()`
+- Repositories were synchronous
+- Each test ran against a fresh in-memory instance
+- IDs were generated using `crypto.randomUUID()`
 
 In Phase 2:
 
-* Repositories are asynchronous
-* IDs are generated at the database level (UUID)
-* Tests interact with a real Postgres database
+- Repositories are asynchronous
+- IDs are generated at the database level (UUID)
+- Tests interact with a real Postgres database
 
 The test suite was updated to account for these changes without modifying the API surface.
 
@@ -913,11 +913,11 @@ The test suite was updated to account for these changes without modifying the AP
 
 Tests now:
 
-* Instantiate a new Express app per test
-* Inject Prisma-backed repositories
-* Create unique users using timestamp-based emails
-* Avoid assumptions about database emptiness
-* Avoid hard-coded IDs
+- Instantiate a new Express app per test
+- Inject Prisma-backed repositories
+- Create unique users using timestamp-based emails
+- Avoid assumptions about database emptiness
+- Avoid hard-coded IDs
 
 Example unique email pattern used in tests:
 `const email = `bob+${Date.now()}@example.com`;`
@@ -932,26 +932,26 @@ Phase 2 tests implicitly validate Prisma error mapping.
 
 For example:
 
-* Unique constraint violations return `409`
-* Missing records return `404`
-* Foreign key violations return `409`
-* Ownership violations return `403`
+- Unique constraint violations return `409`
+- Missing records return `404`
+- Foreign key violations return `409`
+- Ownership violations return `403`
 
 All responses continue to use the standardized response envelope.
 
 This confirms:
 
-* Database-level constraints are active
-* The global error handler properly maps Prisma error codes
-* The API contract remains stable
+- Database-level constraints are active
+- The global error handler properly maps Prisma error codes
+- The API contract remains stable
 
 #### Pagination Validation
 
 Pagination tests validate:
 
-* `limit`
-* `page`
-* `total`
+- `limit`
+- `page`
+- `total`
 
 Rather than asserting exact totals, tests use:`toBeGreaterThanOrEqual(...)`
 
@@ -959,9 +959,9 @@ This prevents failures when persistent test data accumulates.
 
 Pagination behavior is delegated to Prisma using:
 
-* `take`
-* `skip`
-* `orderBy`
+- `take`
+- `skip`
+- `orderBy`
 
 The API response format remains identical to Phase 1.
 
@@ -977,8 +977,7 @@ This clears data and reseeds predictable demo records without dropping migration
 
 This confirms that:
 
-* The engine swap did not break the API contract
-* Persistence moved to Postgres
-* Prisma integration is stable
-* The system behaves consistently under repeated test execution
-
+- The engine swap did not break the API contract
+- Persistence moved to Postgres
+- Prisma integration is stable
+- The system behaves consistently under repeated test execution

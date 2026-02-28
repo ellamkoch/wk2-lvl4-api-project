@@ -23,7 +23,6 @@ export async function clearDatabase(prisma) {
   await prisma.user.deleteMany();
 }
 
-
 /**
  * Inserts deterministic demo data.
  *

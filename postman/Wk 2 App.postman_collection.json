@@ -14,12 +14,8 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/health",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "health"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
         }
       },
       "response": []
@@ -45,9 +41,7 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              ""
-            ],
+            "exec": [""],
             "type": "text/javascript",
             "packages": {},
             "requests": {}
@@ -68,13 +62,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/auth/register",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "register"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "register"]
         }
       },
       "response": []
@@ -98,9 +87,7 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              ""
-            ],
+            "exec": [""],
             "type": "text/javascript",
             "packages": {},
             "requests": {}
@@ -121,13 +108,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/auth/login",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "auth",
-            "login"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "login"]
         }
       },
       "response": []
@@ -151,9 +133,7 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              ""
-            ],
+            "exec": [""],
             "type": "text/javascript",
             "packages": {},
             "requests": {}
@@ -178,12 +158,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/classes",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["classes"]
         }
       },
       "response": []
@@ -195,13 +171,8 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/classes/{{classId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes",
-            "{{classId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["classes", "{{classId}}"]
         }
       },
       "response": []
@@ -220,12 +191,8 @@
         ],
         "url": {
           "raw": "{{baseUrl}}/classes?limit=20&offset=0",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes"
-          ],
+          "host": ["{{baseUrl}}"],
+          "path": ["classes"],
           "query": [
             {
               "key": "limit",
@@ -265,13 +232,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/classes/{{classId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes",
-            "{{classId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["classes", "{{classId}}"]
         }
       },
       "response": []
@@ -288,13 +250,8 @@
         ],
         "url": {
           "raw": "{{baseUrl}}/classes/{{classId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes",
-            "{{classId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["classes", "{{classId}}"]
         }
       },
       "response": []
@@ -318,9 +275,7 @@
         {
           "listen": "prerequest",
           "script": {
-            "exec": [
-              ""
-            ],
+            "exec": [""],
             "type": "text/javascript",
             "packages": {},
             "requests": {}
@@ -350,14 +305,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/classes/{{classId}}/entries",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes",
-            "{{classId}}",
-            "entries"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["classes", "{{classId}}", "entries"]
         }
       },
       "response": []
@@ -369,14 +318,8 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/classes/{{classId}}/entries?limit=20&offset=0",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "classes",
-            "{{classId}}",
-            "entries"
-          ],
+          "host": ["{{baseUrl}}"],
+          "path": ["classes", "{{classId}}", "entries"],
           "query": [
             {
               "key": "limit",
@@ -411,13 +354,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/entries/{{entryId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "entries",
-            "{{entryId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["entries", "{{entryId}}"]
         }
       },
       "response": []
@@ -434,13 +372,8 @@
         ],
         "url": {
           "raw": "{{baseUrl}}/entries/{{entryId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "entries",
-            "{{entryId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["entries", "{{entryId}}"]
         }
       },
       "response": []
@@ -453,9 +386,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     },
     {
@@ -464,9 +395,7 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     }
   ],

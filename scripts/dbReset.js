@@ -12,7 +12,6 @@
 import { prisma } from '../src/db/prisma.js';
 import { clearDatabase, seedDatabase } from '../prisma/seedData.js';
 
-
 async function main() {
   await clearDatabase(prisma);
   const result = await seedDatabase(prisma);

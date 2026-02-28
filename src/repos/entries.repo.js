@@ -23,7 +23,7 @@
  */
 
 export function createEntriesRepo(prisma) {
-    return {
+  return {
     /**
      * Public: list all entries for a specific class.
      *
@@ -42,7 +42,7 @@ export function createEntriesRepo(prisma) {
       if (limit !== undefined) query.take = limit;
       if (offset !== undefined) query.skip = offset;
 
-      const [ entryList, total ] = await Promise.all([
+      const [entryList, total] = await Promise.all([
         prisma.entry.findMany(query),
         prisma.entry.count({ where: { classId } }),
       ]);
@@ -68,11 +68,11 @@ export function createEntriesRepo(prisma) {
      * @returns {{ id: string, classId: string, horseName: string, authorId: string }}
      */
 
-  async create({ classId, horseName, authorId }) {
-    return prisma.entry.create({
-      data: { classId, horseName, authorId }
-    });
-  },
+    async create({ classId, horseName, authorId }) {
+      return prisma.entry.create({
+        data: { classId, horseName, authorId },
+      });
+    },
 
     /**
      * Update an entry if owned by the given author.

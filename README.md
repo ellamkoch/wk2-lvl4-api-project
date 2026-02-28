@@ -1,42 +1,44 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [wk2-lvl4-api-project](#wk2-lvl4-api-project)
-  - [Phase 1 – In-Memory Resource API](#phase-1--in-memory-resource-api)
-    - [Design Philosophy](#design-philosophy)
-    - [Phase 1 Goals](#phase-1-goals)
-    - [ID Strategy (Phase 1 Requirement)](#id-strategy-phase-1-requirement)
-    - [Authentication (Phase 1)](#authentication-phase-1)
-    - [Entries Resource (Phase 1)](#entries-resource-phase-1)
-    - [Cascade Behavior](#cascade-behavior)
-    - [Guard Pattern Consistency Pass (Pre-Testing Refactor)](#guard-pattern-consistency-pass-pre-testing-refactor)
-    - [Test Coverage (Phase 1)](#test-coverage-phase-1)
-    - [Tech Stack (Phase 1)](#tech-stack-phase-1)
-    - [Project Structure](#project-structure)
-  - [How to Run/Install](#how-to-runinstall)
-    - [Environment Setup](#environment-setup)
-    - [Required Variables (Phase 1 Minimum)](#required-variables-phase-1-minimum)
-    - [Additional Variables (Phase 2 – Database Mode)](#additional-variables-phase-2--database-mode)
-    - [Running the Server](#running-the-server)
-  - [Scripts](#scripts)
-    - [Database Scripts (Phase 2)](#database-scripts-phase-2)
-  - [Author Notes](#author-notes)
-    - [Architecture](#architecture)
-    - [Response & Error Envelope](#response--error-envelope)
-    - [Health Check Endpoint](#health-check-endpoint)
-    - [Authentication Endpoints](#authentication-endpoints)
-    - [Request Correlation](#request-correlation)
-  - [Phase 2 – Prisma + Supabase Integration](#phase-2--prisma--supabase-integration)
-    - [Phase 2 Goals](#phase-2-goals)
-    - [Tech Stack (Updated for Phase 2)](#tech-stack-updated-for-phase-2)
-    - [Prisma Initialization](#prisma-initialization)
-    - [Database Schema](#database-schema)
-    - [Migrations](#migrations)
-    - [Seeding & Safe Reset](#seeding--safe-reset)
-    - [Repository Migration (Engine Swap)](#repository-migration-engine-swap)
-    - [Repository Completion (Users + Entries)](#repository-completion-users--entries)
-    - [Controller Async Alignment (Phase 2 Adjustment)](#controller-async-alignment-phase-2-adjustment)
-    - [Testing Strategy](#testing-strategy)
+- [Phase 1 – In-Memory Resource API](#phase-1--in-memory-resource-api)
+  - [Design Philosophy](#design-philosophy)
+  - [Phase 1 Goals](#phase-1-goals)
+  - [ID Strategy (Phase 1 Requirement)](#id-strategy-phase-1-requirement)
+  - [Authentication (Phase 1)](#authentication-phase-1)
+  - [Entries Resource (Phase 1)](#entries-resource-phase-1)
+  - [Cascade Behavior](#cascade-behavior)
+  - [Guard Pattern Consistency Pass (Pre-Testing Refactor)](#guard-pattern-consistency-pass-pre-testing-refactor)
+  - [Test Coverage (Phase 1)](#test-coverage-phase-1)
+  - [Tech Stack (Phase 1)](#tech-stack-phase-1)
+  - [Project Structure](#project-structure)
+- [How to Run/Install](#how-to-runinstall)
+  - [Environment Setup](#environment-setup)
+  - [Required Variables (Phase 1 Minimum)](#required-variables-phase-1-minimum)
+  - [Additional Variables (Phase 2 – Database Mode)](#additional-variables-phase-2--database-mode)
+  - [Running the Server](#running-the-server)
+- [Scripts](#scripts)
+  - [Database Scripts (Phase 2)](#database-scripts-phase-2)
+- [Author Notes](#author-notes)
+  - [Architecture](#architecture)
+  - [Response & Error Envelope](#response--error-envelope)
+  - [Health Check Endpoint](#health-check-endpoint)
+  - [Authentication Endpoints](#authentication-endpoints)
+  - [Request Correlation](#request-correlation)
+- [Phase 2 – Prisma + Supabase Integration](#phase-2--prisma--supabase-integration)
+  - [Phase 2 Goals](#phase-2-goals)
+  - [Tech Stack (Updated for Phase 2)](#tech-stack-updated-for-phase-2)
+  - [Project Structure (Phase 2 Additions)](#project-structure-phase-2-additions)
+  - [Prisma Initialization](#prisma-initialization)
+  - [Database Schema](#database-schema)
+  - [Migrations](#migrations)
+  - [Seeding & Safe Reset](#seeding--safe-reset)
+  - [Repository Migration (Engine Swap)](#repository-migration-engine-swap)
+  - [Repository Completion (Users + Entries)](#repository-completion-users--entries)
+  - [Controller Async Alignment (Phase 2 Adjustment)](#controller-async-alignment-phase-2-adjustment)
+  - [Testing Strategy](#testing-strategy)
+  - [Continuous Integration (Phase 2)](#continuous-integration-phase-2)
+  - [RLS Notes (Phase 2)](#rls-notes-phase-2)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -595,7 +597,7 @@ Only the persistence layer is swapped.
 - [x] Create and run migration
 - [x] Implement seed and safe reset scripts
 - [x] Replace in-memory repositories with Prisma-backed repositories
-- [ ] CI database integration (Postgres service container)
+- [x] CI database integration (Postgres service container)
 - [x] Prisma error mapping (409 handling)
 - [x] Updated test files and run them successfully
 
@@ -611,6 +613,27 @@ Only the persistence layer is swapped.
 - Supertest
 - ESLint
 - Prettier
+
+### Project Structure (Phase 2 Additions)
+
+Phase 2 retains the same layered structure from Phase 1, with the following additions:
+
+prisma/
+  schema.prisma
+  prisma.config.js
+  seed.js
+  seedData.js
+
+scripts/
+  dbReset.js
+
+docs/
+  rls-notes.md
+
+.github/workflows/
+  ci.yml
+
+The repository layer was swapped from in-memory arrays to Prisma-backed repositories without changing the controller or route structure.
 
 ### Prisma Initialization
 
@@ -981,3 +1004,38 @@ This confirms that:
 - Persistence moved to Postgres
 - Prisma integration is stable
 - The system behaves consistently under repeated test execution
+
+### Continuous Integration (Phase 2)
+
+Phase 2 includes a GitHub Actions workflow that runs on pull requests and pushes to `main`.
+
+The CI pipeline performs:
+
+- install dependencies
+- lint
+- prisma generate
+- prisma migrate deploy
+- run tests
+
+CI runs against a temporary Postgres service container, not the remote Supabase database.
+
+This confirms that:
+
+- migrations apply cleanly in a fresh environment
+- the test suite passes against a real Postgres database
+- Phase 2 requirements are satisfied without relying on local state
+
+### RLS Notes (Phase 2)
+
+This repo includes a required Phase 2 write-up:
+
+- `docs/rls-notes.md`
+
+This document explains:
+
+- what Row Level Security (RLS) is
+- why service/admin database roles can bypass RLS
+- why database-level authorization is defense in depth
+- how `auth.uid()` would map to `authorId` using Supabase Auth
+- an example “only owner can update” policy (pseudo-SQL)
+

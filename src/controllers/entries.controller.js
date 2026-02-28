@@ -56,18 +56,18 @@ import { parsePagination } from '#utils/pagination';
  * @param {import('express').Response} res
  */
 
-export function listEntriesForClass(req, res) {
+export async function listEntriesForClass(req, res) {
   const { classes, entries } = res.locals.repos;
-
   const classId = req.params.classId;
 
-  ensure(classes.getById(classId), notFound('Class not found'));
+  const foundClass = await classes.getById(classId);
+  ensure(foundClass, notFound('Class not found'));
 
   const { limit, page, offset } = parsePagination(req.query);
 
-  const result = entries.listByClassId(classId, { limit, offset });
+  const result = await entries.listByClassId(classId, { limit, offset });
 
-  return res.ok(result.entriesList, {
+  return res.ok(result.entryList, {
     pagination: { limit, page, total: result.total },
   });
 }
@@ -84,14 +84,15 @@ export function listEntriesForClass(req, res) {
  * @param {import('express').Response} res
  */
 
-export function createEntry(req, res) {
+export async function createEntry(req, res) {
   const { classes, entries } = res.locals.repos;
   const classId = req.params.classId;
 
-  ensure(classes.getById(classId), notFound('Class not found'));
+  const foundClass = await classes.getById(classId);
+  ensure(foundClass, notFound('Class not found'));
   ensureFields(req.body, ['horseName']);
 
-  const newEntry = entries.create({
+  const newEntry = await entries.create({
     classId,
     horseName: req.body.horseName,
     authorId: req.user.id,
@@ -116,7 +117,7 @@ export function createEntry(req, res) {
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-export function updateEntry(req, res) {
+export async function updateEntry(req, res) {
   const { entries, classes } = res.locals.repos;
   const id = req.params.entryId;
   const updates = {};
@@ -125,12 +126,11 @@ export function updateEntry(req, res) {
 
   ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));
 
-  const entry = entries.getById(id);
+  const entry = await entries.getById(id);
   ensure(entry, notFound('Entry not found'));
-
   ensure(classes.getById(entry.classId), notFound('Class not found'));
 
-  const updatedEntry = entries.update({
+  const updatedEntry = await entries.update({
     id,
     horseName: updates.horseName,
     authorId: req.user.id,
@@ -156,15 +156,17 @@ export function updateEntry(req, res) {
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-export function deleteEntry(req, res) {
+export async function deleteEntry(req, res) {
   const { entries, classes } = res.locals.repos;
   const id = req.params.entryId;
 
-  const entry = entries.getById(id);
-  if (!entry) throw notFound('Entry not found');
-  ensure(classes.getById(entry.classId), notFound('Class not found'));
+  const entry = await entries.getById(id);
+ ensure(entry, notFound('Entry not found'));
 
-  const result = entries.delete({ id, authorId: req.user.id });
+  const parentClass = await classes.getById(entry.classId);
+  ensure(parentClass, notFound('Class not found'));
+
+  const result = await entries.delete({ id, authorId: req.user.id });
 
   if (result === 'forbidden') throw forbidden('You cannot delete this entry');
 

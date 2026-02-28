@@ -30,7 +30,7 @@
  */
 
 import { notFound, forbidden, badRequest } from '#utils/httpErrors';
-import { ensure } from '#utils/ensureFieldsGuard';
+import { ensure, ensureFields } from '#utils/ensureFieldsGuard';
 import { parsePagination } from '#utils/pagination';
 // import { parseCsvSet } from "#utils/queryParams"; //may need this later
 
@@ -50,12 +50,12 @@ import { parsePagination } from '#utils/pagination';
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-// Roadmap: support ?include=entries to attach entries per class.
-export function listAllClasses(req, res) {
+
+export async function listAllClasses(req, res) {
   const { classes } = res.locals.repos;
   const { limit, page, offset } = parsePagination(req.query);
 
-  const result = classes.listAll({
+  const result = await classes.listAll({
     limit,
     offset,
   });
@@ -72,28 +72,18 @@ export function listAllClasses(req, res) {
  * Errors:
  *  - 404 if the class does not exist
  *
- * Roadmap:
- *  - Optional include flags (ex: ?include=entries,author) for expanded responses later.
+ * Includes Entries if they are present now
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
 
-export function getClassById(req, res) {
+export async function getClassById(req, res) {
   const { classes } = res.locals.repos;
 
   const id = req.params.id;
 
-  const found = classes.getById(id);
-  // Roadmap: include=author,entries later
-  // const includeAuthor = include.has('author');
-  // const includeEntries = include.has('entries');
-
-  // const classFound = classes.getByWithIncludes(id, {
-  //     includeAuthor,
-  //     includeEntries,
-  // });
-
+  const found = await classes.getByIdWithEntries(id);
   ensure(found, notFound('Class not found'));
 
   return res.ok(found);
@@ -114,14 +104,15 @@ export function getClassById(req, res) {
  * @param {import('express').Response} res
  */
 
-export function createClass(req, res) {
+export async function createClass(req, res) {
   const { classes } = res.locals.repos;
 
   const { className } = req.body ?? {};
 
   ensure(className, badRequest('Class Name is required'));
+  ensureFields(req.body, ['className']);
 
-  const newClass = classes.create({ className, authorId: req.user.id });
+  const newClass = await classes.create({ className, authorId: req.user.id });
 
   return res.created(newClass);
 }
@@ -147,19 +138,21 @@ export function createClass(req, res) {
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-export function updateClass(req, res) {
+export async function updateClass(req, res) {
   const { classes } = res.locals.repos;
 
   const id = req.params.id;
 
   const updates = {};
-
-  //could put patch behavior here in the future to edit the field(s) that need updating, and return the rest as it was previously. Example below.
   if (req.body.className !== undefined) updates.className = req.body.className;
 
   ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));
-  //don't need spread operator at this point, but could be needed for future versions
-  const updatedClass = classes.update({ id, className: updates.className, authorId: req.user.id });
+  //don't need spread operator at this point, but would be needed for future versions with more fields to be updated
+  const updatedClass = await classes.update({
+    id,
+    className: updates.className,
+    authorId: req.user.id
+  });
 
   if (updatedClass === 'forbidden') throw forbidden('You cannot update this class');
   ensure(updatedClass, notFound('Class not found'));
@@ -187,12 +180,12 @@ export function updateClass(req, res) {
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-export function deleteClass(req, res) {
+export async function deleteClass(req, res) {
   const { classes } = res.locals.repos;
 
   const id = req.params.id;
 
-  const result = classes.delete({ id, authorId: req.user.id });
+  const result = await classes.delete({ id, authorId: req.user.id });
 
   if (result === 'forbidden') throw forbidden('You cannot delete this class');
   ensure(result, notFound('Class not found'));

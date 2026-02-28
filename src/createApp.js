@@ -58,7 +58,7 @@ export function createApp({ repos, config = {} }) {
     return res.ok({ status: 'ok' });
   });
 
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
     res.locals.repos = repos;
     next();
   });

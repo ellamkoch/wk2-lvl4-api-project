@@ -40,6 +40,7 @@ import { parsePagination } from '#utils/pagination';
  * Query params (optional):
  *  - limit: number of items per page
  *  - page: 1-based page number
+ *  - can search by class names that match now
  *
  * Response:
  *  - 200 + list in data
@@ -52,15 +53,23 @@ import { parsePagination } from '#utils/pagination';
 export async function listAllClasses(req, res) {
   const { classes } = res.locals.repos;
   const { limit, page, offset } = parsePagination(req.query);
+  const { className, authorId } = req.query;
+  // console.log("QUERY PARAM:", className);
 
-  const result = await classes.listAll({
+  const { classList, total } = await classes.listAll({
     limit,
     offset,
+    className,
+    authorId
   });
-  return res.ok(result.classList, {
-    pagination: { limit, page, total: result.total },
+
+  // console.log("CLASSES FROM REPO:", result.classList);
+
+  return res.ok(classList, {
+    pagination: { limit, page, total },
   });
 }
+
 
 /**
  * GET /classes/:id (PUBLIC)
@@ -88,6 +97,38 @@ export async function getClassById(req, res) {
 }
 
 /**
+ * GET /mine (PROTECTED)
+ *
+ * Returns a list of classes made by a user id
+ *
+ * Errors:
+- 401 if authentication is missing or invalid*
+ *
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+
+export async function getMyClasses(req, res) {
+  const { classes } = res.locals.repos;
+  const { limit, page, offset } = parsePagination(req.query);
+
+  const userId = req.user.id;
+
+  const result = await classes.listByAuthorId(
+    userId, {
+    limit,
+    offset },
+  );
+const { classList, total } = result;
+// if (total === 0) return res.ok('No classes to list');// if i wanted to put in a helpful msg. this would be handled by the front end normally tho.
+
+  return res.ok(classList, {
+    pagination: { limit, page, total },
+  });
+}
+
+/**
  * POST /classes (PROTECTED)
  *
  * Creates a new class owned by the authenticated user.
@@ -105,7 +146,7 @@ export async function getClassById(req, res) {
 export async function createClass(req, res) {
   const { classes } = res.locals.repos;
 
-  const { className } = req.body ?? {};
+  const { className } = req.body ?? {};//prevents a crash if its undefined
 
   ensure(className, badRequest('Class Name is required'));
   ensureFields(req.body, ['className']);

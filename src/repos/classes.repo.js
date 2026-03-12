@@ -35,16 +35,29 @@ export function createClassesRepo(prisma) {
      *   include an `entries` array (related records are fetched by default).
      */
 
-    async listAll({ limit, offset } = {}) {
-      const query = { orderBy: { id: 'asc' } };
+    async listAll({ limit, offset, className, authorId}) {
+      const where = {};
+
+      if (className) { where.className = {
+        contains: className,
+        mode: 'insensitive'
+      };
+    }
+
+    if (authorId) {
+      where.authorId = authorId;
+    }
+
+      const query = { where, orderBy: { id: 'asc' } };
 
       if (limit !== undefined) query.take = limit;
       if (offset !== undefined) query.skip = offset;
 
       const [classList, total] = await Promise.all([
         prisma.class.findMany(query),
-        prisma.class.count(),
+        prisma.class.count( { where }),
       ]);
+
       return { classList, total };
     },
 
@@ -82,6 +95,7 @@ export function createClassesRepo(prisma) {
      * @param {number|string} params.authorId
      * @returns {{ id: string, className: string, authorId: string }}
      */
+
     async create({ className, authorId }) {
       return prisma.class.create({
         data: { className, authorId },
@@ -135,12 +149,20 @@ export function createClassesRepo(prisma) {
      * @returns {any[]}  Array of class objects without `entries`.
      */
     async listByAuthorId(authorId, { limit, offset } = {}) {
-      return prisma.class.findMany({
+      const query = {
         where: { authorId },
-        skip: offset,
-        take: limit,
-        orderBy: { id: 'asc' },
-      });
+        orderBy: { id: 'asc' }
+      };
+
+      if (limit !== undefined) query.take = limit;
+      if (offset !== undefined) query.skip = offset;
+
+      const [classList, total] = await Promise.all([
+        prisma.class.findMany(query),
+        prisma.class.count(authorId),
+      ]);
+
+      return { classList, total };
     },
 
     /**

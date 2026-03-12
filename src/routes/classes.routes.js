@@ -30,6 +30,7 @@ import {
   createClass,
   updateClass,
   deleteClass,
+  getMyClasses
 } from '#controllers/classes.controller';
 import { listEntriesForClass, createEntry } from '#controllers/entries.controller';
 import { requireAuth } from '#middleware/requireAuth';
@@ -42,7 +43,9 @@ import { requireJson } from '#middleware/requireJson';
 export const classesRouter = Router();
 
 //public routes
+// classesRouter.get('/show-classes', listAllClasses); // if i renamed the endpoint
 classesRouter.get('/', listAllClasses);
+classesRouter.get('/mine', requireAuth, getMyClasses);
 classesRouter.get('/:id', getClassById);
 //Protected Routes that require Auth
 classesRouter.post('/', requireAuth, requireJson, createClass);

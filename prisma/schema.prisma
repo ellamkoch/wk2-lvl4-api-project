@@ -47,6 +47,7 @@ model Class {
 model Entry {
   id        String   @id @default(uuid())
   horseName String
+  exhibitor String
 
   classId    String  @map("class_id")
   class      Class   @relation(fields: [classId], references: [id], onDelete: Cascade)

@@ -54,5 +54,5 @@ export const entriesRouter = Router();
 //Require Auth routes
 
 //Roadmap - update could be a patch later when there are more fields. PUT is fine for now.
-entriesRouter.put('/:entryId', requireAuth, requireJson, updateEntry);
+entriesRouter.patch('/:entryId', requireAuth, requireJson, updateEntry);
 entriesRouter.delete('/:entryId', requireAuth, deleteEntry);

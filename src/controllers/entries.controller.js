@@ -90,10 +90,13 @@ export async function createEntry(req, res) {
   const foundClass = await classes.getById(classId);
   ensure(foundClass, notFound('Class not found'));
   ensureFields(req.body, ['horseName']);
+  const { horseName, exhibitor } = req.body;
+  ensure(horseName.length >= 1 && horseName.length <= 28, badRequest('Horse name must be 28 characters or less'));
 
   const newEntry = await entries.create({
     classId,
-    horseName: req.body.horseName,
+    horseName,
+    exhibitor,
     authorId: req.user.id,
   });
 
@@ -119,19 +122,29 @@ export async function createEntry(req, res) {
 export async function updateEntry(req, res) {
   const { entries, classes } = res.locals.repos;
   const id = req.params.entryId;
-  const updates = {};
 
-  if (req.body?.horseName !== undefined) updates.horseName = req.body.horseName;
+  const { horseName, exhibitor } = req.body;
 
-  ensure(Object.keys(updates).length > 0, badRequest('No updatable fields provided'));
+  ensure(
+    horseName !== undefined || exhibitor !== undefined, badRequest('At least 1 field must be updated')
+  )
+  if (horseName !== undefined) {
+    ensure(horseName.length >= 1 && horseName.length <= 28, badRequest('Horse name must be 28 characters or less')
+  );
+  }
+
+  const updates = {
+    ...(horseName !== undefined && { horseName }),
+    ...(exhibitor !== undefined && { exhibitor })
+  };
 
   const entry = await entries.getById(id);
   ensure(entry, notFound('Entry not found'));
-  ensure(classes.getById(entry.classId), notFound('Class not found'));
+  ensure(await classes.getById(entry.classId), notFound('Class not found'));
 
   const updatedEntry = await entries.update({
     id,
-    horseName: updates.horseName,
+    ...updates,
     authorId: req.user.id,
   });
 

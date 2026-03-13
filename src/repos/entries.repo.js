@@ -68,9 +68,9 @@ export function createEntriesRepo(prisma) {
      * @returns {{ id: string, classId: string, horseName: string, authorId: string }}
      */
 
-    async create({ classId, horseName, authorId }) {
+    async create({ classId, horseName, exhibitor, authorId }) {
       return prisma.entry.create({
-        data: { classId, horseName, authorId },
+        data: { classId, horseName, exhibitor, authorId },
       });
     },
 
@@ -83,14 +83,17 @@ export function createEntriesRepo(prisma) {
      * @param {string} params.authorId   Author's UUID for permission check.
      * @returns {Object | null | 'forbidden'}
      */
-    async update({ id, horseName, authorId }) {
+    async update({ id, horseName, exhibitor, authorId }) {
       const updatedEntry = await prisma.entry.findUnique({ where: { id } });
       if (!updatedEntry) return null;
       if (updatedEntry.authorId !== authorId) return 'forbidden';
 
       return prisma.entry.update({
         where: { id },
-        data: { horseName },
+        data: {
+          horseName,
+          exhibitor
+         },
       });
     },
 

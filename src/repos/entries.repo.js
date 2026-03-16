@@ -94,6 +94,14 @@ export function createEntriesRepo(prisma) {
           horseName,
           exhibitor
          },
+         select: {
+          id: true,
+          classId: true,
+          horseName: true,
+          exhibitor: true,
+          authorId: true,
+          createdAt: true,
+         }
       });
     },
 

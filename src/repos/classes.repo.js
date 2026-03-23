@@ -36,7 +36,10 @@ export function createClassesRepo(prisma) {
      */
 
     async listAll({ limit, offset } = {}) {
-      const query = { orderBy: { id: 'asc' } };
+      const query = { orderBy: { id: 'asc' }, omit: {
+        authorId: true,
+      }
+      };
 
       if (limit !== undefined) query.take = limit;
       if (offset !== undefined) query.skip = offset;

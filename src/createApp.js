@@ -45,7 +45,7 @@ export function createApp({ repos, config = {} }) {
 
   app.use(morgan('dev'));
 
-  app.use((req, _res, next) => {
+  app.use((err, req, res, next) => {
     //not needed perhaps?
     next();
   });

@@ -103,6 +103,7 @@ function mapPrismaError(err) {
  * @returns {void}
  */
 export function errorHandler(err, req, res, _next) {
+  // console.log('Error caught in handler:', err.constructor.name);
   const prismaMapped = mapPrismaError(err);
   if (prismaMapped) {
     return sendError(

@@ -36,7 +36,9 @@ export function createEntriesRepo(prisma) {
     async listByClassId(classId, { limit, offset } = {}) {
       const query = {
         where: { classId },
-        orderBy: { id: 'asc' },
+        orderBy: { id: 'asc' }, omit: {
+          authorId: true, 
+        },
       };
 
       if (limit !== undefined) query.take = limit;
